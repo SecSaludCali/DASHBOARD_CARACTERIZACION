@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Caracterización PIC</title>
+    <title>Dashboard Integral - Caracterización PIC Cali</title>
 
     <!-- Tailwind CSS para el diseño -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,7 +16,7 @@
     <!-- Chart.js para los gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- PapaParse para leer CSV -->
+    <!-- PapaParse para leer CSV (Conectado a Google Sheets) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <!-- FontAwesome para iconos -->
@@ -25,145 +25,258 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f3f4f6;
+            background-color: #f0fdf4; /* Fondo verde muy claro/salud */
+            background-image: radial-gradient(#dcfce7 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
         #map {
-            height: 400px;
+            height: 450px;
             z-index: 1;
         }
 
         .glass-panel {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.2s;
         }
+
+        .glass-panel:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #15803d; }
     </style>
 </head>
 
-<body class="text-gray-800">
+<body class="text-gray-800 antialiased">
 
     <!-- Navbar -->
-    <nav class="bg-blue-800 text-white p-4 shadow-md">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold"><i class="fa-solid fa-chart-line mr-2"></i> Observatorio PIC - Caracterización
-            </h1>
-            <span class="text-sm bg-blue-700 px-3 py-1 rounded-full"><i class="fa-solid fa-location-dot mr-1"></i> Cali,
-                Valle del Cauca</span>
+    <nav class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto flex flex-col xl:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white text-green-700 p-2 rounded-lg shadow">
+                    <i class="fa-solid fa-notes-medical text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold">Observatorio PIC Cali</h1>
+                    <p class="text-xs text-green-100 opacity-90">Conectado en vivo a Google Sheets</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center justify-center gap-3 text-sm">
+                
+                <!-- NUEVO: Filtro por ESE -->
+                <div class="bg-white text-green-800 rounded-full px-4 py-2 flex items-center shadow-md border border-green-200">
+                    <i class="fa-solid fa-filter text-green-600 mr-2"></i>
+                    <span class="font-bold mr-2 hidden md:inline">Red de Salud (ESE):</span>
+                    <select id="filtro-red" onchange="aplicarFiltro()" class="bg-transparent font-semibold outline-none cursor-pointer text-gray-700">
+                        <option value="Todas">Todas las ESE</option>
+                        <!-- Opciones dinámicas -->
+                    </select>
+                </div>
+
+                <div class="bg-black bg-opacity-20 px-4 py-2 rounded-full flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left animate-spin-slow" id="sync-icon"></i>
+                    <span class="hidden sm:inline">Última act:</span> <strong id="last-sync">Cargando...</strong>
+                </div>
+                
+                <button onclick="cargarDatos()" class="hover:bg-white hover:text-green-700 border border-white px-4 py-2 rounded-full transition-colors flex items-center gap-2 font-semibold">
+                    <i class="fa-solid fa-arrows-rotate"></i> Actualizar
+                </button>
+            </div>
         </div>
     </nav>
 
     <!-- Contenido Principal -->
     <div class="container mx-auto p-4 md:p-6 space-y-6">
 
-        <!-- Mensaje de Error (Oculto por defecto) -->
-        <div id="error-alert" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow-sm" role="alert">
+        <!-- Mensaje de Error (Oculto) -->
+        <div id="error-alert" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-sm" role="alert">
             <p class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Error de conexión</p>
             <p id="error-message">No se pudieron cargar los datos.</p>
         </div>
 
-        <!-- KPIs -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="glass-panel p-4 flex items-center space-x-4 border-l-4 border-blue-500">
-                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                    <i class="fa-solid fa-clipboard-list text-2xl"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-500 font-semibold">Total Visitas</p>
-                    <h2 class="text-2xl font-bold" id="kpi-total">Cargando...</h2>
-                </div>
-            </div>
-
-            <div class="glass-panel p-4 flex items-center space-x-4 border-l-4 border-red-500">
-                <div class="p-3 rounded-full bg-red-100 text-red-600">
-                    <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-500 font-semibold">Riesgo Ambiental</p>
-                    <h2 class="text-2xl font-bold" id="kpi-riesgo">0</h2>
+        <!-- Fila de KPIs Principales -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="glass-panel p-5 border-l-4 border-emerald-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Total Encuestas</p>
+                        <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-total">...</h2>
+                    </div>
+                    <div class="p-3 rounded-xl bg-emerald-100 text-emerald-600"><i class="fa-solid fa-users text-xl"></i></div>
                 </div>
             </div>
 
-            <div class="glass-panel p-4 flex items-center space-x-4 border-l-4 border-yellow-500">
-                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                    <i class="fa-solid fa-briefcase text-2xl"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-500 font-semibold">Desempleo / Informal</p>
-                    <h2 class="text-2xl font-bold" id="kpi-empleo">0%</h2>
+            <div class="glass-panel p-5 border-l-4 border-red-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Barreras Salud</p>
+                        <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-salud">0</h2>
+                    </div>
+                    <div class="p-3 rounded-xl bg-red-100 text-red-600"><i class="fa-solid fa-house-medical-circle-xmark text-xl"></i></div>
                 </div>
             </div>
 
-            <div class="glass-panel p-4 flex items-center space-x-4 border-l-4 border-teal-500">
-                <div class="p-3 rounded-full bg-teal-100 text-teal-600">
-                    <i class="fa-solid fa-notes-medical text-2xl"></i>
+            <div class="glass-panel p-5 border-l-4 border-amber-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Riesgo Ambiental</p>
+                        <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-riesgo">0</h2>
+                    </div>
+                    <div class="p-3 rounded-xl bg-amber-100 text-amber-600"><i class="fa-solid fa-volcano text-xl"></i></div>
                 </div>
-                <div>
-                    <p class="text-sm text-gray-500 font-semibold">Barreras de Salud</p>
-                    <h2 class="text-2xl font-bold" id="kpi-salud">0</h2>
+            </div>
+
+            <div class="glass-panel p-5 border-l-4 border-blue-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Déficit Servicios</p>
+                        <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-servicios">0</h2>
+                    </div>
+                    <div class="p-3 rounded-xl bg-blue-100 text-blue-600"><i class="fa-solid fa-faucet-drip text-xl"></i></div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-5 border-l-4 border-purple-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Desempleo/Informal</p>
+                        <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-empleo">0</h2>
+                    </div>
+                    <div class="p-3 rounded-xl bg-purple-100 text-purple-600"><i class="fa-solid fa-person-digging text-xl"></i></div>
                 </div>
             </div>
         </div>
 
-        <!-- Fila del Mapa y Gráfico Circular -->
+        <!-- Módulo: Mapa y Resumen de Redes -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Mapa -->
-            <div class="glass-panel p-4 lg:col-span-2">
-                <h3 class="text-lg font-bold mb-4 text-gray-700"><i class="fa-solid fa-map-location-dot mr-2"></i>Mapeo
-                    Territorial de Encuestas</h3>
-                <div id="map" class="rounded-lg overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center">
-                    <span class="text-gray-500" id="map-placeholder">Inicializando mapa...</span>
+            <!-- Mapa Interactivo -->
+            <div class="glass-panel p-5 lg:col-span-2 flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-700"><i class="fa-solid fa-map-location-dot mr-2 text-green-600"></i>Georreferenciación de Vulnerabilidades</h3>
+                    <div class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-200">
+                        <span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-1"></span> Alerta
+                        <span class="inline-block w-2 h-2 bg-blue-500 rounded-full ml-2 mr-1"></span> Normal
+                    </div>
+                </div>
+                <div id="map" class="rounded-xl border border-gray-200 bg-gray-50 flex-grow shadow-inner">
+                    <span class="text-gray-500 m-4 flex items-center justify-center h-full" id="map-placeholder">
+                        <i class="fa-solid fa-spinner fa-spin mr-2"></i> Cargando mapa...
+                    </span>
                 </div>
             </div>
 
-            <!-- Gráfico Escolaridad -->
-            <div class="glass-panel p-4 flex flex-col justify-center items-center">
-                <h3 class="text-lg font-bold mb-4 text-gray-700 w-full text-left"><i
-                        class="fa-solid fa-graduation-cap mr-2"></i>Nivel de Escolaridad</h3>
-                <div class="w-full h-64 relative">
-                    <canvas id="chartEscolaridad"></canvas>
+            <!-- Gráfico Red de Salud & Educación -->
+            <div class="flex flex-col gap-6">
+                <div class="glass-panel p-5 flex-1" id="panel-grafico-red">
+                    <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-network-wired mr-2 text-blue-500"></i>Visitas por Red de Salud</h3>
+                    <div class="w-full h-48 relative">
+                        <canvas id="chartRedSalud"></canvas>
+                    </div>
+                </div>
+                <div class="glass-panel p-5 flex-1">
+                    <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-user-graduate mr-2 text-indigo-500"></i>Nivel Educativo</h3>
+                    <div class="w-full h-48 relative">
+                        <canvas id="chartEducacion"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Fila de Gráficos de Barras -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Gráfico Laboral -->
-            <div class="glass-panel p-4">
-                <h3 class="text-lg font-bold mb-4 text-gray-700"><i class="fa-solid fa-user-tie mr-2"></i>Situación
-                    Laboral por Barrio</h3>
+        <!-- Módulo: Condiciones de Vida y Riesgos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Gráfico: Laboral y Económico -->
+            <div class="glass-panel p-5">
+                <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-coins mr-2 text-amber-500"></i>Situación Socioeconómica</h3>
                 <div class="w-full h-64">
-                    <canvas id="chartLaboral"></canvas>
+                    <canvas id="chartEconomia"></canvas>
                 </div>
             </div>
 
-            <!-- Gráfico Condiciones -->
-            <div class="glass-panel p-4">
-                <h3 class="text-lg font-bold mb-4 text-gray-700"><i
-                        class="fa-solid fa-house-chimney-crack mr-2"></i>Factores de Riesgo / Vulnerabilidad</h3>
+            <!-- Gráfico: Condiciones de Vivienda -->
+            <div class="glass-panel p-5">
+                <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-house-crack mr-2 text-orange-500"></i>Déficit en Vivienda y Servicios</h3>
                 <div class="w-full h-64">
-                    <canvas id="chartRiesgos"></canvas>
+                    <canvas id="chartVivienda"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico: Riesgos Ambientales -->
+            <div class="glass-panel p-5">
+                <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-smog mr-2 text-stone-500"></i>Ambiental y Entorno</h3>
+                <div class="w-full h-64">
+                    <canvas id="chartAmbiental"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Módulo: Seguridad y Salud Mental -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+             <div class="glass-panel p-5">
+                <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-shield-halved mr-2 text-red-500"></i>Seguridad y Convivencia</h3>
+                <div class="w-full h-64">
+                    <canvas id="chartSeguridad"></canvas>
+                </div>
+            </div>
+            
+             <div class="glass-panel p-5">
+                <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-brain mr-2 text-pink-500"></i>Salud Mental y Social</h3>
+                <div class="w-full h-64">
+                    <canvas id="chartSaludMental"></canvas>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <!-- Script de Lógica -->
+    <!-- Script de Lógica Principal -->
     <script>
-        // Variables globales para mantener el estado
+        // Variables globales y de estado
         let map;
         let markersGroup;
-        let chartEscolaridadInstance = null;
-        let chartLaboralInstance = null;
-        let chartRiesgosInstance = null;
-        let totalRegistrosAnterior = -1;
+        
+        let todosLosDatos = []; // Almacenará TODOS los datos que vienen del Sheets
+        let datosFiltrados = []; // Almacenará los datos tras aplicar el Filtro ESE
+        let filtroActual = 'Todas'; // Estado actual del filtro
+        let ultimaActualizacionStr = '';
+
+        // Instancias de Chart.js
+        let charts = {
+            redSalud: null,
+            educacion: null,
+            economia: null,
+            vivienda: null,
+            ambiental: null,
+            seguridad: null,
+            saludMental: null
+        };
+
+        // ESTA ES TU BASE DE DATOS EN VIVO
+        const sheetId = '1fWf3Ktd3jxeRWFHCQaGyDrKqRzGi2y_4gkfFsVl9yUs';
+
+        // Funciones de ayuda
+        const isYes = (val) => val && val.trim().toLowerCase() === 'sí';
+        const isNo = (val) => val && val.trim().toLowerCase() === 'no';
+        
+        const formatTime = (date) => {
+            return date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        };
 
         document.addEventListener('DOMContentLoaded', () => {
             inicializarMapaVacio();
             cargarDatos();
-            // Refrescar automáticamente cada 10 segundos
-            setInterval(cargarDatos, 10000);
+            
+            // Auto-refresh cada 15 segundos consultando a Google Sheets
+            setInterval(cargarDatos, 15000);
         });
 
         function inicializarMapaVacio() {
@@ -177,12 +290,12 @@
             markersGroup = L.featureGroup().addTo(map);
         }
 
+        // --- CONEXIÓN A GOOGLE SHEETS EN VIVO ---
         function cargarDatos() {
-            // URL de exportación CSV usando el ID de tu nuevo Google Sheets
-            const sheetId = '1fWf3Ktd3jxeRWFHCQaGyDrKqRzGi2y_4gkfFsVl9yUs';
-            const csvUrlBase = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+            const syncIcon = document.getElementById('sync-icon');
+            syncIcon.classList.add('fa-spin');
             
-            // Usamos un simple parámetro de tiempo para evitar la caché del navegador.
+            const csvUrlBase = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
             const urlConCache = csvUrlBase + '&_t=' + new Date().getTime();
 
             Papa.parse(urlConCache, {
@@ -190,10 +303,12 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function (results) {
-                    // Validar si la respuesta fue un documento HTML (pasa cuando el sheet es privado)
+                    syncIcon.classList.remove('fa-spin');
+                    ultimaActualizacionStr = formatTime(new Date());
+                    document.getElementById('last-sync').innerText = ultimaActualizacionStr;
+
                     if (results.data.length > 0 && Object.keys(results.data[0]).some(k => k.toLowerCase().includes('<!doctype') || k.toLowerCase().includes('<html'))) {
-                        mostrarError("El documento de Google Sheets es privado. Ve a Compartir y selecciona 'Cualquier persona con el enlace'.");
-                        document.getElementById('kpi-total').innerText = "Error";
+                        mostrarError("El Google Sheets es privado. Ve a Archivo > Compartir y configúralo como 'Cualquier persona con el enlace'.");
                         return;
                     }
                     
@@ -201,81 +316,161 @@
                     procesarResultados(results.data);
                 },
                 error: function (err) {
-                    console.error("Error capturado:", err);
-                    document.getElementById('kpi-total').innerText = "Error de red";
-                    mostrarError("Problema de conexión al descargar los datos. Verificando...");
+                    syncIcon.classList.remove('fa-spin');
+                    console.error("Error CSV:", err);
+                    mostrarError("Error al conectar con Google Sheets. Verificando red...");
                 }
             });
         }
 
         function mostrarError(mensaje) {
-            const errorAlert = document.getElementById('error-alert');
-            const errorMsg = document.getElementById('error-message');
-            errorMsg.innerText = mensaje;
-            errorAlert.classList.remove('hidden');
+            document.getElementById('error-message').innerText = mensaje;
+            document.getElementById('error-alert').classList.remove('hidden');
         }
 
         function procesarResultados(rawData) {
-            if (!rawData || rawData.length === 0) {
-                document.getElementById('kpi-total').innerText = "0";
-                return;
-            }
+            if (!rawData || rawData.length === 0) return;
 
-            // Procesar las coordenadas sin eliminar el registro entero si fallan
-            const datosProcesados = rawData.map(row => {
-                let lat = parseFloat(row['Latitud'] || row['lat'] || 0);
-                let lng = parseFloat(row['Longitud'] || row['lng'] || 0);
+            const extraerNumero = (val) => {
+                if (!val) return 0;
+                const strVal = String(val).trim();
+                const numRegex = /-?\d+[\.,]?\d*/g;
+                const matches = strVal.match(numRegex);
+                if (matches && matches.length > 0) return parseFloat(matches[0].replace(',', '.'));
+                return 0;
+            };
 
-                let colCoordenadas = row['Coordenadas'] || row['Coordenada'] || row['Ubicación'];
+            // Mapeo estructurado de cada registro
+            todosLosDatos = rawData.map(row => {
+                let lat = extraerNumero(row['GPS_Latitud']);
+                let lng = extraerNumero(row['GPS_Longitud']);
 
-                if (!lat && colCoordenadas && typeof colCoordenadas === 'string') {
-                    const parts = colCoordenadas.replace(/['"]/g, '').split(',');
-                    if (parts.length >= 2) {
-                        lat = parseFloat(parts[0].trim());
-                        lng = parseFloat(parts[1].trim());
-                    }
-                }
+                // Si viene vacío el ESE, le ponemos "No especificada"
+                let redSaludValue = (row['red_salud'] || 'No especificada').trim();
 
                 return {
-                    fecha: row['Marca temporal'] || row['Fecha'] || 'Sin dato',
-                    comuna: row['Comuna'] || 'N/A',
-                    barrio: row['Barrio'] || 'Desconocido',
-                    lat: lat,
-                    lng: lng,
-                    escolaridad: row['Nivel de escolaridad'] || row['Escolaridad'] || 'Sin dato',
-                    empleo: row['Situación laboral'] || row['Ocupación'] || 'Sin dato',
-                    riesgo_ambiental: row['Riesgos ambientales'] || row['Riesgos'] || 'No',
-                    barreras_salud: row['Barreras de salud'] || 'No',
-                    seguridad: row['Seguridad'] || 'Sin dato'
+                    // Generales
+                    fecha: row['fecha_visita'] || 'Sin dato',
+                    red_salud: redSaludValue,
+                    encuestador: row['encuestador'] || 'Anónimo',
+                    comuna: row['comuna'] || 'N/A',
+                    barrio: row['barrio'] || 'N/A',
+                    lat: isNaN(lat) ? 0 : lat,
+                    lng: isNaN(lng) ? 0 : lng,
+                    
+                    // Educación
+                    edu_desescolarizada: isYes(row['edu_desescolarizada']),
+                    edu_bachilleres: isYes(row['edu_bachilleres']),
+                    edu_sena: isYes(row['edu_sena']),
+                    
+                    // Laboral y Económico
+                    lab_informal: isYes(row['lab_informal']),
+                    lab_desempleo: isYes(row['lab_desempleo']),
+                    lab_ingresos_bajos: isYes(row['lab_ingresos_bajos']),
+                    
+                    // Vivienda y Servicios
+                    viv_cocina_inadecuada: isYes(row['viv_saneamiento_cocina']) || isYes(row['viv_lena']),
+                    deficit_agua: isNo(row['serv_agua']),
+                    deficit_energia: isNo(row['serv_energia']),
+                    deficit_alcantarillado: isNo(row['serv_alcantarillado']),
+                    
+                    // Ambiental y Riesgos
+                    amb_basura: isYes(row['amb_basura']),
+                    amb_vectores: isYes(row['amb_vectores']),
+                    riesgo_deslizamiento: isYes(row['riesgo_deslizamiento']),
+                    riesgo_inundacion: isYes(row['riesgo_inundacion']),
+                    riesgo_incendio: isYes(row['riesgo_incendio']),
+                    
+                    // Salud y Seguridad
+                    salud_barreras: isYes(row['salud_barreras']),
+                    seg_riñas: isYes(row['seg_riñas']),
+                    seg_pandillas: isYes(row['seg_pandillas']),
+                    
+                    // Salud Mental / Social
+                    sm_consumo_calle: isYes(row['sm_consumo_calle']),
+                    sm_licor_calle: isYes(row['sm_licor_calle']),
+                    sm_suicidios: isYes(row['sm_suicidios']),
+                    part_organizaciones: isYes(row['part_organizaciones'])
                 };
-            }); // AQUÍ REMOVÍ EL FILTRO (.filter) QUE DESCARTABA REGISTROS SIN COORDENADAS
+            });
 
-            // Actualizar el Dashboard si hay registros nuevos (o si es la primera vez)
-            if (datosProcesados.length !== totalRegistrosAnterior) {
-                actualizarDashboard(datosProcesados);
-                totalRegistrosAnterior = datosProcesados.length;
-            } else if (totalRegistrosAnterior === -1 && datosProcesados.length === 0) {
-                 document.getElementById('kpi-total').innerText = "0";
+            // Actualizar las opciones del filtro ESE
+            actualizarSelectFiltro();
+
+            // Aplicar el filtro a la data (esto llama al renderizado completo)
+            aplicarFiltro(true);
+        }
+
+        // --- SISTEMA DE FILTRADO POR RED DE SALUD (ESE) --- //
+        function actualizarSelectFiltro() {
+            const selectElement = document.getElementById('filtro-red');
+            
+            // Extraer todas las redes de salud únicas de la base de datos
+            const redesUnicas = [...new Set(todosLosDatos.map(d => d.red_salud))].filter(Boolean).sort();
+            
+            // Reconstruir opciones
+            selectElement.innerHTML = '<option value="Todas">Todas las ESE</option>';
+            redesUnicas.forEach(red => {
+                if(red !== 'No especificada') {
+                    selectElement.innerHTML += `<option value="${red}">${red}</option>`;
+                }
+            });
+
+            // Restaurar selección si el usuario tenía algo seleccionado y ocurrió el auto-refresh
+            if (redesUnicas.includes(filtroActual)) {
+                selectElement.value = filtroActual;
+            } else {
+                filtroActual = 'Todas';
+                selectElement.value = 'Todas';
             }
         }
 
-        function actualizarDashboard(mockData) {
-            // --- ACTUALIZAR KPIs ---
-            document.getElementById('kpi-total').innerText = mockData.length;
-            document.getElementById('kpi-total').classList.remove('text-red-500');
+        function aplicarFiltro(esRefrescoAutomatico = false) {
+            // Obtener el valor actual del `<select>`
+            filtroActual = document.getElementById('filtro-red').value;
+            
+            // Filtrar los datos maestos
+            if (filtroActual === 'Todas') {
+                datosFiltrados = [...todosLosDatos];
+            } else {
+                datosFiltrados = todosLosDatos.filter(d => d.red_salud === filtroActual);
+            }
 
-            const riesgos = mockData.filter(d => d.riesgo_ambiental && d.riesgo_ambiental.toLowerCase() !== 'no' && d.riesgo_ambiental !== 'sin dato').length;
-            document.getElementById('kpi-riesgo').innerText = riesgos;
+            // Ocultar/Mostrar el gráfico de pastel de "Redes de Salud" dependiendo si hay un filtro aplicado
+            const panelGraficoRed = document.getElementById('panel-grafico-red');
+            if (filtroActual === 'Todas') {
+                panelGraficoRed.style.display = 'block'; // Mostrar si son todas
+            } else {
+                panelGraficoRed.style.display = 'none';  // Ocultar si ya filtramos por una sola
+            }
 
-            const empleoVulnerable = mockData.filter(d => d.empleo && (d.empleo.toLowerCase().includes('desempleo') || d.empleo.toLowerCase().includes('informal'))).length;
-            const porcentajeVulnerable = mockData.length > 0 ? Math.round((empleoVulnerable / mockData.length) * 100) : 0;
-            document.getElementById('kpi-empleo').innerText = `${porcentajeVulnerable}%`;
+            // Repintar UI con la info filtrada
+            actualizarKPIs(datosFiltrados);
+            actualizarMapa(datosFiltrados, esRefrescoAutomatico);
+            actualizarGraficos(datosFiltrados);
+        }
 
-            const barreras = mockData.filter(d => d.barreras_salud && (d.barreras_salud.toLowerCase().includes('sí') || d.barreras_salud.toLowerCase().includes('si'))).length;
+        function actualizarKPIs(data) {
+            document.getElementById('kpi-total').innerText = data.length;
+
+            // Barreras de Salud
+            const barreras = data.filter(d => d.salud_barreras).length;
             document.getElementById('kpi-salud').innerText = barreras;
 
+            // Riesgo Ambiental
+            const riesgoAmb = data.filter(d => d.riesgo_deslizamiento || d.riesgo_inundacion || d.riesgo_incendio).length;
+            document.getElementById('kpi-riesgo').innerText = riesgoAmb;
 
-            // --- ACTUALIZAR MAPA ---
+            // Déficit Servicios
+            const servicios = data.filter(d => d.deficit_agua || d.deficit_energia || d.deficit_alcantarillado).length;
+            document.getElementById('kpi-servicios').innerText = servicios;
+
+            // Vulnerabilidad Laboral
+            const empleo = data.filter(d => d.lab_desempleo || d.lab_informal).length;
+            document.getElementById('kpi-empleo').innerText = empleo;
+        }
+
+        function actualizarMapa(data, esRefrescoAutomatico) {
             markersGroup.clearLayers();
 
             const redIcon = new L.Icon({
@@ -289,112 +484,167 @@
                 iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
             });
 
-            const escolaridadCounts = {};
-            const riesgosCounts = {
-                'Barreras Salud': barreras,
-                'Riesgos Ambientales': riesgos,
-                'Problemas Seguridad': mockData.filter(d => d.seguridad && d.seguridad.toLowerCase() !== 'tranquilo' && d.seguridad !== 'sin dato').length
-            };
+            data.forEach(d => {
+                // Lógica de alerta en mapa: Alta vulnerabilidad
+                const isVulnerable = d.salud_barreras || d.deficit_agua || d.riesgo_deslizamiento || d.riesgo_inundacion || d.seg_pandillas;
 
-            mockData.forEach(dato => {
-                escolaridadCounts[dato.escolaridad] = (escolaridadCounts[dato.escolaridad] || 0) + 1;
-
-                const isVulnerable = (dato.barreras_salud && dato.barreras_salud.toLowerCase().includes('si')) || (dato.riesgo_ambiental && dato.riesgo_ambiental.toLowerCase() !== 'no' && dato.riesgo_ambiental !== 'sin dato');
-
-                // Solo crear el pin en el mapa si las coordenadas son válidas
-                if (!isNaN(dato.lat) && !isNaN(dato.lng) && dato.lat !== 0 && dato.lng !== 0) {
-                    const marker = L.marker([dato.lat, dato.lng], { icon: isVulnerable ? redIcon : blueIcon });
+                if (!isNaN(d.lat) && !isNaN(d.lng) && d.lat !== 0 && d.lng !== 0) {
+                    const marker = L.marker([d.lat, d.lng], { icon: isVulnerable ? redIcon : blueIcon });
+                    
+                    // Alertas compiladas para el popup
+                    let alertas = [];
+                    if(d.salud_barreras) alertas.push('<span class="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded">Barrera Salud</span>');
+                    if(d.deficit_agua) alertas.push('<span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">Sin Agua</span>');
+                    if(d.riesgo_deslizamiento) alertas.push('<span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded">Deslizamiento</span>');
 
                     marker.bindPopup(`
-                        <div class="text-sm">
-                            <strong class="text-base text-blue-800">${dato.barrio} (Comuna ${dato.comuna})</strong><br/>
-                            <b>Fecha:</b> ${dato.fecha}<br/>
-                            <b>Escolaridad:</b> ${dato.escolaridad}<br/>
-                            <b>Empleo:</b> ${dato.empleo}<br/>
-                            <b>Riesgo Amb.:</b> ${dato.riesgo_ambiental}<br/>
-                            <b>Barreras Salud:</b> ${dato.barreras_salud}
+                        <div class="text-sm w-48">
+                            <strong class="text-base text-green-800 border-b block pb-1 mb-1">${d.barrio}</strong>
+                            <p class="mb-1 text-gray-600"><i class="fa-solid fa-calendar-day w-4 text-center"></i> ${d.fecha}</p>
+                            <p class="mb-1 text-gray-600"><i class="fa-solid fa-hospital w-4 text-center"></i> Red ${d.red_salud}</p>
+                            <p class="mb-2 text-gray-600"><i class="fa-solid fa-clipboard-user w-4 text-center"></i> ${d.encuestador}</p>
+                            <div class="flex flex-wrap gap-1 mt-2">
+                                ${alertas.length > 0 ? alertas.join('') : '<span class="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded">Sin alertas graves</span>'}
+                            </div>
                         </div>
                     `);
-
                     markersGroup.addLayer(marker);
                 }
             });
 
-            // Ajustar el zoom solo si es la primera carga y existen pines en el mapa
-            if (mockData.length > 0 && totalRegistrosAnterior === -1 && markersGroup.getLayers().length > 0) {
-                map.fitBounds(markersGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
+            // Ajustar el zoom del mapa de manera inteligente
+            if (markersGroup.getLayers().length > 0) {
+                // Si el usuario cambia el filtro manualmente, el mapa se acerca automáticamente a los pines de esa ESE
+                if (!esRefrescoAutomatico) {
+                    map.fitBounds(markersGroup.getBounds(), { padding: [40, 40], maxZoom: 15 });
+                }
+            } else {
+                // Vista predeterminada sobre Cali si no hay datos al filtrar
+                map.setView([3.422, -76.548], 12);
+            }
+        }
+
+        // --- FUNCIONES GENERADORAS DE GRÁFICOS --- //
+        function crearGrafico(ctxId, type, instanceName, chartData, options = {}) {
+            const ctx = document.getElementById(ctxId);
+            if (charts[instanceName]) charts[instanceName].destroy();
+            
+            const defaultOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 500 }
+            };
+
+            charts[instanceName] = new Chart(ctx, {
+                type: type,
+                data: chartData,
+                options: { ...defaultOptions, ...options }
+            });
+        }
+
+        function actualizarGraficos(data) {
+            // Manejamos caso de array vacío para no quebrar las gráficas
+            const safeData = data.length > 0 ? data : [{}];
+
+            // 1. Red de Salud (Doughnut) - Solo se dibuja si estamos en "Todas"
+            if (filtroActual === 'Todas') {
+                const redes = safeData.reduce((acc, curr) => { 
+                    if(curr.red_salud) acc[curr.red_salud] = (acc[curr.red_salud] || 0) + 1; 
+                    return acc; 
+                }, {});
+                crearGrafico('chartRedSalud', 'doughnut', 'redSalud', {
+                    labels: Object.keys(redes).length > 0 ? Object.keys(redes) : ['Sin Datos'],
+                    datasets: [{ data: Object.values(redes).length > 0 ? Object.values(redes) : [1], backgroundColor: ['#059669', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899'] }]
+                }, { plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } }, cutout: '65%' });
             }
 
-            // --- ACTUALIZAR GRÁFICOS ---
-            actualizarGraficoEscolaridad(escolaridadCounts);
-            actualizarGraficoLaboral(mockData);
-            actualizarGraficoRiesgos(riesgosCounts);
-        }
+            // 2. Educación (Pie)
+            const eduData = [
+                data.filter(d => d.edu_desescolarizada).length,
+                data.filter(d => d.edu_bachilleres).length,
+                data.filter(d => d.edu_sena).length
+            ];
+            crearGrafico('chartEducacion', 'pie', 'educacion', {
+                labels: ['Desescolarizada', 'Bachiller', 'SENA/Técnico'],
+                datasets: [{ data: data.length > 0 ? eduData : [0,0,0], backgroundColor: ['#ef4444', '#f59e0b', '#10b981'] }]
+            }, { plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } } });
 
-        function actualizarGraficoEscolaridad(counts) {
-            const ctx = document.getElementById('chartEscolaridad');
-            if (chartEscolaridadInstance) chartEscolaridadInstance.destroy();
+            // 3. Situación Económica (Bar)
+            crearGrafico('chartEconomia', 'bar', 'economia', {
+                labels: ['Desempleo', 'Trabajo Informal', 'Ingresos Bajos'],
+                datasets: [{
+                    label: 'Cantidad de Reportes',
+                    data: [
+                        data.filter(d => d.lab_desempleo).length,
+                        data.filter(d => d.lab_informal).length,
+                        data.filter(d => d.lab_ingresos_bajos).length
+                    ],
+                    backgroundColor: '#f59e0b', borderRadius: 6
+                }]
+            }, { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } });
 
-            if (Object.keys(counts).length === 0) counts = { 'Sin Datos': 1 };
+            // 4. Vivienda y Servicios (Bar Horizontal)
+            crearGrafico('chartVivienda', 'bar', 'vivienda', {
+                labels: ['Sin Agua', 'Sin Energía', 'Sin Alcantarillado', 'Cocina Leña/Inadec.'],
+                datasets: [{
+                    label: 'Viviendas Afectadas',
+                    data: [
+                        data.filter(d => d.deficit_agua).length,
+                        data.filter(d => d.deficit_energia).length,
+                        data.filter(d => d.deficit_alcantarillado).length,
+                        data.filter(d => d.viv_cocina_inadecuada).length
+                    ],
+                    backgroundColor: '#3b82f6', borderRadius: 6
+                }]
+            }, { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } });
 
-            chartEscolaridadInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(counts),
-                    datasets: [{
-                        data: Object.values(counts),
-                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#cbd5e1'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%', animation: { duration: totalRegistrosAnterior === -1 ? 1000 : 0 } }
-            });
-        }
+            // 5. Ambiental (Bar Horizontal)
+            crearGrafico('chartAmbiental', 'bar', 'ambiental', {
+                labels: ['Basuras en vía', 'Vectores/Plagas', 'R. Deslizamiento', 'R. Inundación', 'R. Incendio'],
+                datasets: [{
+                    label: 'Reportes',
+                    data: [
+                        data.filter(d => d.amb_basura).length,
+                        data.filter(d => d.amb_vectores).length,
+                        data.filter(d => d.riesgo_deslizamiento).length,
+                        data.filter(d => d.riesgo_inundacion).length,
+                        data.filter(d => d.riesgo_incendio).length
+                    ],
+                    backgroundColor: '#84cc16', borderRadius: 6
+                }]
+            }, { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } });
 
-        function actualizarGraficoLaboral(mockData) {
-            const ctx = document.getElementById('chartLaboral');
-            if (chartLaboralInstance) chartLaboralInstance.destroy();
+            // 6. Seguridad (Polar o Bar)
+            crearGrafico('chartSeguridad', 'bar', 'seguridad', {
+                labels: ['Riñas Constantes', 'Pandillas/Combos'],
+                datasets: [{
+                    label: 'Zonas Afectadas',
+                    data: [
+                        data.filter(d => d.seg_riñas).length,
+                        data.filter(d => d.seg_pandillas).length
+                    ],
+                    backgroundColor: '#ef4444', borderRadius: 6, maxBarThickness: 50
+                }]
+            }, { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } });
 
-            const barrios = [...new Set(mockData.map(d => d.barrio))].slice(0, 10);
-            if (barrios.length === 0) barrios.push('Sin Datos');
-
-            const formalData = barrios.map(b => mockData.filter(d => d.barrio === b && d.empleo && d.empleo.toLowerCase().includes('formal')).length);
-            const informalData = barrios.map(b => mockData.filter(d => d.barrio === b && d.empleo && (d.empleo.toLowerCase().includes('informal') || d.empleo.toLowerCase().includes('independiente'))).length);
-            const desempleoData = barrios.map(b => mockData.filter(d => d.barrio === b && d.empleo && d.empleo.toLowerCase().includes('desempleo')).length);
-
-            chartLaboralInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: barrios,
-                    datasets: [
-                        { label: 'Formal', data: formalData, backgroundColor: '#3b82f6' },
-                        { label: 'Informal/Independ.', data: informalData, backgroundColor: '#f59e0b' },
-                        { label: 'Desempleo', data: desempleoData, backgroundColor: '#ef4444' }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } } }, animation: { duration: totalRegistrosAnterior === -1 ? 1000 : 0 } }
-            });
-        }
-
-        function actualizarGraficoRiesgos(counts) {
-            const ctx = document.getElementById('chartRiesgos');
-            if (chartRiesgosInstance) chartRiesgosInstance.destroy();
-
-            chartRiesgosInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(counts),
-                    datasets: [{
-                        label: 'Número de Casos',
-                        data: Object.values(counts),
-                        backgroundColor: '#8b5cf6',
-                        borderRadius: 4
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }, animation: { duration: totalRegistrosAnterior === -1 ? 1000 : 0 } }
-            });
+            // 7. Salud Mental / Social (Bar Horizontal)
+            crearGrafico('chartSaludMental', 'bar', 'saludMental', {
+                labels: ['Consumo Drogas (Vía)', 'Consumo Licor (Vía)', 'Riesgo Suicidio', 'Part. Organizaciones'],
+                datasets: [{
+                    label: 'Incidencias',
+                    data: [
+                        data.filter(d => d.sm_consumo_calle).length,
+                        data.filter(d => d.sm_licor_calle).length,
+                        data.filter(d => d.sm_suicidios).length,
+                        data.filter(d => d.part_organizaciones).length // Este es positivo
+                    ],
+                    backgroundColor: (ctx) => {
+                        return ctx.dataIndex === 3 ? '#10b981' : '#ec4899'; // Verde para el positivo
+                    },
+                    borderRadius: 6
+                }]
+            }, { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } });
         }
     </script>
 </body>
-
 </html>
