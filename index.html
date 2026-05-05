@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Caracterización PIC</title>
+
+    <!-- Tailwind CSS para el diseño -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Leaflet CSS y JS para el Mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Chart.js para los gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- PapaParse para leer CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        #map {
+            height: 400px;
+            z-index: 1;
+        }
+
+        .glass-panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+
+<body class="text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-blue-800 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold"><i class="fa-solid fa-chart-line mr-2"></i> Observatorio PIC - Caracterización
+            </h1>
+            <span class="text-sm bg-blue-700 px-3 py-1 rounded-full"><i class="fa-solid fa-location-dot mr-1"></i> Cali,
+                Valle del Cauca</span>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <div class="container mx-auto p-4 md:p-6 space-y-6">
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-panel p-4 flex items-center space-x-4 border-l-4 border-blue-500">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fa-solid fa-clipboard-list text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-semibold">Total Visitas</p>
+                    <h2 class="text-2xl font-bold" id="kpi-total">Cargando...</h2>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 flex items-center space-x-4 border-l-4 border-red-500">
+                <div class="p-3 rounded-full bg-red-100 text-red-600">
+                    <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-semibold">Riesgo Ambiental</p>
+                    <h2 class="text-2xl font-bold" id="kpi-riesgo">0</h2>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 flex items-center space-x-4 border-l-4 border-yellow-500">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <i class="fa-solid fa-briefcase text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-semibold">Desempleo / Informal</p>
+                    <h2 class="text-2xl font-bold" id="kpi-empleo">0%</h2>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 flex items-center space-x-4 border-l-4 border-teal-500">
+                <div class="p-3 rounded-full bg-teal-100 text-teal-600">
+                    <i class="fa-solid fa-notes-medical text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-semibold">Barreras de Salud</p>
+                    <h2 class="text-2xl font-bold" id="kpi-salud">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila del Mapa y Gráfico Circular -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Mapa -->
+            <div class="glass-panel p-4 lg:col-span-2">
+                <h3 class="text-lg font-bold mb-4 text-gray-700"><i class="fa-solid fa-map-location-dot mr-2"></i>Mapeo
+                    Territorial de Encuestas</h3>
+                <div id="map"
+                    class="rounded-lg overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center">
+                    <span class="text-gray-500" id="map-placeholder">Inicializando mapa...</span>
+                </div>
+            </div>
+
+            <!-- Gráfico Escolaridad -->
+            <div class="glass-panel p-4 flex flex-col justify-center items-center">
+                <h3 class="text-lg font-bold mb-4 text-gray-700 w-full text-left"><i
+                        class="fa-solid fa-graduation-cap mr-2"></i>Nivel de Escolaridad</h3>
+                <div class="w-full h-64 relative">
+                    <canvas id="chartEscolaridad"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila de Gráficos de Barras -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Gráfico Laboral -->
+            <div class="glass-panel p-4">
+                <h3 class="text-lg font-bold mb-4 text-gray-700"><i class="fa-solid fa-user-tie mr-2"></i>Situación
+                    Laboral por Barrio</h3>
+                <div class="w-full h-64">
+                    <canvas id="chartLaboral"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico Condiciones -->
+            <div class="glass-panel p-4">
+                <h3 class="text-lg font-bold mb-4 text-gray-700"><i
+                        class="fa-solid fa-house-chimney-crack mr-2"></i>Factores de Riesgo / Vulnerabilidad</h3>
+                <div class="w-full h-64">
+                    <canvas id="chartRiesgos"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script de Lógica -->
+    <script>
+        // Variables globales para mantener el estado
+        let map;
+        let markersGroup;
+        let chartEscolaridadInstance = null;
+        let chartLaboralInstance = null;
+        let chartRiesgosInstance = null;
+        let totalRegistrosAnterior = -1;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            inicializarMapaVacio();
+            cargarDatos();
+            // Refrescar automáticamente cada 10 segundos
+            setInterval(cargarDatos, 10000);
+        });
+
+        function inicializarMapaVacio() {
+            document.getElementById('map-placeholder').style.display = 'none';
+            map = L.map('map').setView([3.422, -76.548], 12);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(map);
+            markersGroup = L.featureGroup().addTo(map);
+        }
+
+        // --- SOLUCIÓN AL BLOQUEO DE CHROME (Uso de un Proxy) ---
+        function cargarDatos() {
+            // El enlace original de Google Sheets
+            const csvUrlBase = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSv0vbakeLU3KG3XrZ6--wdijub2LV-BCFjS4JyLVp8Sti6d_jgXd6L1Y8bu9mgZUOSa0I7mtcW9oyi/pub?gid=0&single=true&output=csv';
+
+            // Pasamos el enlace por un "puente" público (AllOrigins) para que Chrome no lo bloquee al estar en tu escritorio
+            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvUrlBase + '&_t=' + new Date().getTime());
+
+            Papa.parse(proxyUrl, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function (results) {
+                    procesarResultados(results.data);
+                },
+                error: function (err) {
+                    console.error("Error capturado:", err);
+                    document.getElementById('kpi-total').innerText = "Reintentando...";
+                }
+            });
+        }
+
+        function procesarResultados(rawData) {
+            if (!rawData || rawData.length === 0) {
+                document.getElementById('kpi-total').innerText = "0";
+                return;
+            }
+
+            // Procesar las coordenadas y filtrar
+            const datosProcesados = rawData.map(row => {
+                let lat = parseFloat(row['Latitud'] || row['lat'] || 0);
+                let lng = parseFloat(row['Longitud'] || row['lng'] || 0);
+
+                let colCoordenadas = row['Coordenadas'] || row['Coordenada'] || row['Ubicación'];
+
+                if (!lat && colCoordenadas && typeof colCoordenadas === 'string') {
+                    const parts = colCoordenadas.replace(/['"]/g, '').split(',');
+                    if (parts.length >= 2) {
+                        lat = parseFloat(parts[0].trim());
+                        lng = parseFloat(parts[1].trim());
+                    }
+                }
+
+                return {
+                    fecha: row['Marca temporal'] || row['Fecha'] || 'Sin dato',
+                    comuna: row['Comuna'] || 'N/A',
+                    barrio: row['Barrio'] || 'Desconocido',
+                    lat: lat,
+                    lng: lng,
+                    escolaridad: row['Nivel de escolaridad'] || row['Escolaridad'] || 'Sin dato',
+                    empleo: row['Situación laboral'] || row['Ocupación'] || 'Sin dato',
+                    riesgo_ambiental: row['Riesgos ambientales'] || row['Riesgos'] || 'No',
+                    barreras_salud: row['Barreras de salud'] || 'No',
+                    seguridad: row['Seguridad'] || 'Sin dato'
+                };
+            }).filter(d => !isNaN(d.lat) && !isNaN(d.lng) && d.lat !== 0 && d.lng !== 0);
+
+            // Actualizar el Dashboard si hay registros nuevos (o si es la primera vez)
+            if (datosProcesados.length !== totalRegistrosAnterior) {
+                actualizarDashboard(datosProcesados);
+                totalRegistrosAnterior = datosProcesados.length;
+            }
+        }
+
+        function actualizarDashboard(mockData) {
+            // --- ACTUALIZAR KPIs ---
+            document.getElementById('kpi-total').innerText = mockData.length;
+            document.getElementById('kpi-total').classList.remove('text-red-500');
+
+            const riesgos = mockData.filter(d => d.riesgo_ambiental && d.riesgo_ambiental.toLowerCase() !== 'no' && d.riesgo_ambiental !== 'sin dato').length;
+            document.getElementById('kpi-riesgo').innerText = riesgos;
+
+            const empleoVulnerable = mockData.filter(d => d.empleo && (d.empleo.toLowerCase().includes('desempleo') || d.empleo.toLowerCase().includes('informal'))).length;
+            const porcentajeVulnerable = mockData.length > 0 ? Math.round((empleoVulnerable / mockData.length) * 100) : 0;
+            document.getElementById('kpi-empleo').innerText = `${porcentajeVulnerable}%`;
+
+            const barreras = mockData.filter(d => d.barreras_salud && (d.barreras_salud.toLowerCase().includes('sí') || d.barreras_salud.toLowerCase().includes('si'))).length;
+            document.getElementById('kpi-salud').innerText = barreras;
+
+
+            // --- ACTUALIZAR MAPA ---
+            markersGroup.clearLayers();
+
+            const redIcon = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            });
+            const blueIcon = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            });
+
+            const escolaridadCounts = {};
+            const riesgosCounts = {
+                'Barreras Salud': barreras,
+                'Riesgos Ambientales': riesgos,
+                'Problemas Seguridad': mockData.filter(d => d.seguridad && d.seguridad.toLowerCase() !== 'tranquilo' && d.seguridad !== 'sin dato').length
+            };
+
+            mockData.forEach(dato => {
+                escolaridadCounts[dato.escolaridad] = (escolaridadCounts[dato.escolaridad] || 0) + 1;
+
+                const isVulnerable = (dato.barreras_salud && dato.barreras_salud.toLowerCase().includes('si')) || (dato.riesgo_ambiental && dato.riesgo_ambiental.toLowerCase() !== 'no' && dato.riesgo_ambiental !== 'sin dato');
+
+                const marker = L.marker([dato.lat, dato.lng], { icon: isVulnerable ? redIcon : blueIcon });
+
+                marker.bindPopup(`
+                    <div class="text-sm">
+                        <strong class="text-base text-blue-800">${dato.barrio} (Comuna ${dato.comuna})</strong><br/>
+                        <b>Fecha:</b> ${dato.fecha}<br/>
+                        <b>Escolaridad:</b> ${dato.escolaridad}<br/>
+                        <b>Empleo:</b> ${dato.empleo}<br/>
+                        <b>Riesgo Amb.:</b> ${dato.riesgo_ambiental}<br/>
+                        <b>Barreras Salud:</b> ${dato.barreras_salud}
+                    </div>
+                `);
+
+                markersGroup.addLayer(marker);
+            });
+
+            // Ajustar el zoom solo si es la primera carga y hay datos
+            if (mockData.length > 0 && totalRegistrosAnterior === -1) {
+                map.fitBounds(markersGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
+            }
+
+            // --- ACTUALIZAR GRÁFICOS ---
+            actualizarGraficoEscolaridad(escolaridadCounts);
+            actualizarGraficoLaboral(mockData);
+            actualizarGraficoRiesgos(riesgosCounts);
+        }
+
+        function actualizarGraficoEscolaridad(counts) {
+            const ctx = document.getElementById('chartEscolaridad');
+            if (chartEscolaridadInstance) chartEscolaridadInstance.destroy();
+
+            if (Object.keys(counts).length === 0) counts = { 'Sin Datos': 1 };
+
+            chartEscolaridadInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#cbd5e1'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%', animation: { duration: totalRegistrosAnterior === -1 ? 1000 : 0 } }
+            });
+        }
+
+        function actualizarGraficoLaboral(mockData) {
+            const ctx = document.getElementById('chartLaboral');
+            if (chartLaboralInstance) chartLaboralInstance.destroy();
+
+            const barrios = [...new Set(mockData.map(d => d.barrio))].slice(0, 10);
+            if (barrios.length === 0) barrios.push('Sin Datos');
+
+            const formalData = barrios.map(b => mockData.filter(d => d.barrio === b && d.empleo && d.empleo.toLowerCase().includes('formal')).length);
+            const informalData = barrios.map(b => mockData.filter(d => d.barrio === b && d.empleo && (d.empleo.toLowerCase().includes('informal') || d.empleo.toLowerCase().includes('independiente'))).length);
+            const desempleoData = barrios.map(b => mockData.filter(d => d.barrio === b && d.empleo && d.empleo.toLowerCase().includes('desempleo')).length);
+
+            chartLaboralInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: barrios,
+                    datasets: [
+                        { label: 'Formal', data: formalData, backgroundColor: '#3b82f6' },
+                        { label: 'Informal/Independ.', data: informalData, backgroundColor: '#f59e0b' },
+                        { label: 'Desempleo', data: desempleoData, backgroundColor: '#ef4444' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } } }, animation: { duration: totalRegistrosAnterior === -1 ? 1000 : 0 } }
+            });
+        }
+
+        function actualizarGraficoRiesgos(counts) {
+            const ctx = document.getElementById('chartRiesgos');
+            if (chartRiesgosInstance) chartRiesgosInstance.destroy();
+
+            chartRiesgosInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        label: 'Número de Casos',
+                        data: Object.values(counts),
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }, animation: { duration: totalRegistrosAnterior === -1 ? 1000 : 0 } }
+            });
+        }
+    </script>
+</body>
+
+</html>
