@@ -56,6 +56,12 @@
     <!-- Contenido Principal -->
     <div class="container mx-auto p-4 md:p-6 space-y-6">
 
+        <!-- Mensaje de Error (Oculto por defecto) -->
+        <div id="error-alert" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow-sm" role="alert">
+            <p class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Error de conexión</p>
+            <p id="error-message">No se pudieron cargar los datos.</p>
+        </div>
+
         <!-- KPIs -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="glass-panel p-4 flex items-center space-x-4 border-l-4 border-blue-500">
@@ -105,8 +111,7 @@
             <div class="glass-panel p-4 lg:col-span-2">
                 <h3 class="text-lg font-bold mb-4 text-gray-700"><i class="fa-solid fa-map-location-dot mr-2"></i>Mapeo
                     Territorial de Encuestas</h3>
-                <div id="map"
-                    class="rounded-lg overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center">
+                <div id="map" class="rounded-lg overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center">
                     <span class="text-gray-500" id="map-placeholder">Inicializando mapa...</span>
                 </div>
             </div>
@@ -172,26 +177,42 @@
             markersGroup = L.featureGroup().addTo(map);
         }
 
-        // --- SOLUCIÓN AL BLOQUEO DE CHROME (Uso de un Proxy) ---
+        // --- SOLUCIÓN: Eliminación del Proxy allorigins ---
         function cargarDatos() {
-            // El enlace original de Google Sheets
             const csvUrlBase = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSv0vbakeLU3KG3XrZ6--wdijub2LV-BCFjS4JyLVp8Sti6d_jgXd6L1Y8bu9mgZUOSa0I7mtcW9oyi/pub?gid=0&single=true&output=csv';
+            
+            // Usamos un simple parámetro de tiempo para evitar la caché del navegador.
+            // Google Sheets CSV ya incluye cabeceras CORS de forma nativa.
+            const urlConCache = csvUrlBase + '&_t=' + new Date().getTime();
 
-            // Pasamos el enlace por un "puente" público (AllOrigins) para que Chrome no lo bloquee al estar en tu escritorio
-            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvUrlBase + '&_t=' + new Date().getTime());
-
-            Papa.parse(proxyUrl, {
+            Papa.parse(urlConCache, {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
                 complete: function (results) {
+                    // Validar si la respuesta fue un documento HTML (pasa cuando el sheet no es público)
+                    if (results.data.length > 0 && Object.keys(results.data[0]).some(k => k.toLowerCase().includes('<!doctype') || k.toLowerCase().includes('<html'))) {
+                        mostrarError("El documento de Google Sheets parece no ser público. Asegúrate de ir a Archivo > Compartir > Publicar en la Web y seleccionar CSV.");
+                        document.getElementById('kpi-total').innerText = "Error";
+                        return;
+                    }
+                    
+                    document.getElementById('error-alert').classList.add('hidden');
                     procesarResultados(results.data);
                 },
                 error: function (err) {
                     console.error("Error capturado:", err);
-                    document.getElementById('kpi-total').innerText = "Reintentando...";
+                    document.getElementById('kpi-total').innerText = "Error de red";
+                    mostrarError("Problema de conexión al descargar los datos. Verificando...");
                 }
             });
+        }
+
+        function mostrarError(mensaje) {
+            const errorAlert = document.getElementById('error-alert');
+            const errorMsg = document.getElementById('error-message');
+            errorMsg.innerText = mensaje;
+            errorAlert.classList.remove('hidden');
         }
 
         function procesarResultados(rawData) {
@@ -233,6 +254,8 @@
             if (datosProcesados.length !== totalRegistrosAnterior) {
                 actualizarDashboard(datosProcesados);
                 totalRegistrosAnterior = datosProcesados.length;
+            } else if (totalRegistrosAnterior === -1 && datosProcesados.length === 0) {
+                 document.getElementById('kpi-total').innerText = "0";
             }
         }
 
