@@ -177,12 +177,12 @@
             markersGroup = L.featureGroup().addTo(map);
         }
 
-        // --- SOLUCIÓN: Eliminación del Proxy allorigins ---
         function cargarDatos() {
-            const csvUrlBase = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSv0vbakeLU3KG3XrZ6--wdijub2LV-BCFjS4JyLVp8Sti6d_jgXd6L1Y8bu9mgZUOSa0I7mtcW9oyi/pub?gid=0&single=true&output=csv';
+            // URL de exportación CSV usando el ID de tu nuevo Google Sheets
+            const sheetId = '1fWf3Ktd3jxeRWFHCQaGyDrKqRzGi2y_4gkfFsVl9yUs';
+            const csvUrlBase = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
             
             // Usamos un simple parámetro de tiempo para evitar la caché del navegador.
-            // Google Sheets CSV ya incluye cabeceras CORS de forma nativa.
             const urlConCache = csvUrlBase + '&_t=' + new Date().getTime();
 
             Papa.parse(urlConCache, {
@@ -190,9 +190,9 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function (results) {
-                    // Validar si la respuesta fue un documento HTML (pasa cuando el sheet no es público)
+                    // Validar si la respuesta fue un documento HTML (pasa cuando el sheet es privado)
                     if (results.data.length > 0 && Object.keys(results.data[0]).some(k => k.toLowerCase().includes('<!doctype') || k.toLowerCase().includes('<html'))) {
-                        mostrarError("El documento de Google Sheets parece no ser público. Asegúrate de ir a Archivo > Compartir > Publicar en la Web y seleccionar CSV.");
+                        mostrarError("El documento de Google Sheets es privado. Ve a Compartir y selecciona 'Cualquier persona con el enlace'.");
                         document.getElementById('kpi-total').innerText = "Error";
                         return;
                     }
@@ -221,7 +221,7 @@
                 return;
             }
 
-            // Procesar las coordenadas y filtrar
+            // Procesar las coordenadas sin eliminar el registro entero si fallan
             const datosProcesados = rawData.map(row => {
                 let lat = parseFloat(row['Latitud'] || row['lat'] || 0);
                 let lng = parseFloat(row['Longitud'] || row['lng'] || 0);
@@ -248,7 +248,7 @@
                     barreras_salud: row['Barreras de salud'] || 'No',
                     seguridad: row['Seguridad'] || 'Sin dato'
                 };
-            }).filter(d => !isNaN(d.lat) && !isNaN(d.lng) && d.lat !== 0 && d.lng !== 0);
+            }); // AQUÍ REMOVÍ EL FILTRO (.filter) QUE DESCARTABA REGISTROS SIN COORDENADAS
 
             // Actualizar el Dashboard si hay registros nuevos (o si es la primera vez)
             if (datosProcesados.length !== totalRegistrosAnterior) {
@@ -301,24 +301,27 @@
 
                 const isVulnerable = (dato.barreras_salud && dato.barreras_salud.toLowerCase().includes('si')) || (dato.riesgo_ambiental && dato.riesgo_ambiental.toLowerCase() !== 'no' && dato.riesgo_ambiental !== 'sin dato');
 
-                const marker = L.marker([dato.lat, dato.lng], { icon: isVulnerable ? redIcon : blueIcon });
+                // Solo crear el pin en el mapa si las coordenadas son válidas
+                if (!isNaN(dato.lat) && !isNaN(dato.lng) && dato.lat !== 0 && dato.lng !== 0) {
+                    const marker = L.marker([dato.lat, dato.lng], { icon: isVulnerable ? redIcon : blueIcon });
 
-                marker.bindPopup(`
-                    <div class="text-sm">
-                        <strong class="text-base text-blue-800">${dato.barrio} (Comuna ${dato.comuna})</strong><br/>
-                        <b>Fecha:</b> ${dato.fecha}<br/>
-                        <b>Escolaridad:</b> ${dato.escolaridad}<br/>
-                        <b>Empleo:</b> ${dato.empleo}<br/>
-                        <b>Riesgo Amb.:</b> ${dato.riesgo_ambiental}<br/>
-                        <b>Barreras Salud:</b> ${dato.barreras_salud}
-                    </div>
-                `);
+                    marker.bindPopup(`
+                        <div class="text-sm">
+                            <strong class="text-base text-blue-800">${dato.barrio} (Comuna ${dato.comuna})</strong><br/>
+                            <b>Fecha:</b> ${dato.fecha}<br/>
+                            <b>Escolaridad:</b> ${dato.escolaridad}<br/>
+                            <b>Empleo:</b> ${dato.empleo}<br/>
+                            <b>Riesgo Amb.:</b> ${dato.riesgo_ambiental}<br/>
+                            <b>Barreras Salud:</b> ${dato.barreras_salud}
+                        </div>
+                    `);
 
-                markersGroup.addLayer(marker);
+                    markersGroup.addLayer(marker);
+                }
             });
 
-            // Ajustar el zoom solo si es la primera carga y hay datos
-            if (mockData.length > 0 && totalRegistrosAnterior === -1) {
+            // Ajustar el zoom solo si es la primera carga y existen pines en el mapa
+            if (mockData.length > 0 && totalRegistrosAnterior === -1 && markersGroup.getLayers().length > 0) {
                 map.fitBounds(markersGroup.getBounds(), { padding: [30, 30], maxZoom: 16 });
             }
 
