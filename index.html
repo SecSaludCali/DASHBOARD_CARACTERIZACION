@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Caracterización PIC Cali</title>
+    <title>Dashboard Futurista - Caracterización PIC Cali</title>
 
     <!-- Tailwind CSS para el diseño -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -60,7 +60,6 @@
         #map {
             height: 500px;
             z-index: 1;
-            background-color: #0B0F19;
         }
 
         /* Paneles Glassmorphism Oscuro */
@@ -84,6 +83,7 @@
         .cyber-node {
             background-color: #00f2fe;
             border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.5);
             box-shadow: 0 0 10px #00f2fe, 0 0 20px #00f2fe;
             animation: pulse-glow 2s infinite alternate;
         }
@@ -91,6 +91,7 @@
         .cyber-node-purple {
             background-color: #a18cd1;
             border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.5);
             box-shadow: 0 0 10px #a18cd1, 0 0 20px #a18cd1;
             animation: pulse-glow 2s infinite alternate;
         }
@@ -175,7 +176,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl md:text-2xl font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
-                        Observatorio <span class="text-cyber-cyan font-light tracking-widest">Microterritorios</span>
+                        NEXUS <span class="text-cyber-cyan font-light tracking-widest">OBSERVATORY</span>
                     </h1>
                     <p class="text-[10px] uppercase tracking-widest text-cyber-cyan/70 font-mono">Enlace activo // PIC Cali Data Stream</p>
                 </div>
@@ -200,7 +201,6 @@
                 
                 <button onclick="cargarDatos()" class="group relative px-6 py-2 bg-transparent text-cyber-cyan font-bold uppercase tracking-wider text-xs overflow-hidden rounded-lg border border-cyber-cyan/50 transition-all hover:bg-cyber-cyan/10 hover:shadow-[0_0_15px_rgba(0,242,254,0.3)]">
                     <span class="relative z-10 flex items-center gap-2">
-                        <!-- CORRECCIÓN DEL ERROR: Se asignó un ID único para evitar el conflicto null -->
                         <i id="force-sync-icon" class="fa-solid fa-rotate w-3"></i> FORCE_UPDATE
                     </span>
                 </button>
@@ -242,10 +242,10 @@
         <!-- ========================================== -->
         <div id="tab-identificacion" class="tab-content active space-y-6">
             <!-- KPIs Futuristas -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="glass-panel p-5 relative overflow-hidden group">
                     <div class="absolute top-0 right-0 w-16 h-16 bg-cyber-cyan opacity-10 rounded-full blur-2xl -mr-4 -mt-4 transition-all group-hover:opacity-30"></div>
-                    <p class="text-xs text-cyber-cyan/70 font-mono tracking-widest mb-1">DATA_NODES</p>
+                    <p class="text-xs text-cyber-cyan/70 font-mono tracking-widest mb-1">TOTAL ENCUESTAS</p>
                     <div class="flex justify-between items-end">
                         <h2 class="text-4xl font-light text-white font-mono" id="kpi-total">000</h2>
                         <i class="fa-solid fa-database text-cyber-cyan/50 text-2xl"></i>
@@ -254,7 +254,7 @@
                 
                 <div class="glass-panel p-5 relative overflow-hidden group">
                     <div class="absolute top-0 right-0 w-16 h-16 bg-cyber-blue opacity-10 rounded-full blur-2xl -mr-4 -mt-4 transition-all group-hover:opacity-30"></div>
-                    <p class="text-xs text-cyber-blue/70 font-mono tracking-widest mb-1">ZONAS_ACTIVAS</p>
+                    <p class="text-xs text-cyber-blue/70 font-mono tracking-widest mb-1">COMUNAS INTERVENIDAS</p>
                     <div class="flex justify-between items-end">
                         <h2 class="text-4xl font-light text-white font-mono" id="kpi-comunas">00</h2>
                         <i class="fa-solid fa-map-location text-cyber-blue/50 text-2xl"></i>
@@ -262,17 +262,8 @@
                 </div>
 
                 <div class="glass-panel p-5 relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-16 h-16 bg-cyber-purple opacity-10 rounded-full blur-2xl -mr-4 -mt-4 transition-all group-hover:opacity-30"></div>
-                    <p class="text-xs text-cyber-purple/70 font-mono tracking-widest mb-1">AGENTES_CAMPO</p>
-                    <div class="flex justify-between items-end">
-                        <h2 class="text-4xl font-light text-white font-mono" id="kpi-encuestadores">00</h2>
-                        <i class="fa-solid fa-user-ninja text-cyber-purple/50 text-2xl"></i>
-                    </div>
-                </div>
-
-                <div class="glass-panel p-5 relative overflow-hidden group">
                     <div class="absolute top-0 right-0 w-16 h-16 bg-cyber-pink opacity-10 rounded-full blur-2xl -mr-4 -mt-4 transition-all group-hover:opacity-30"></div>
-                    <p class="text-xs text-cyber-pink/70 font-mono tracking-widest mb-1">PUNTOS_VIVIENDA</p>
+                    <p class="text-xs text-cyber-pink/70 font-mono tracking-widest mb-1">VIVIENDAS VISITADAS</p>
                     <div class="flex justify-between items-end">
                         <h2 class="text-4xl font-light text-white font-mono" id="kpi-viviendas">000</h2>
                         <i class="fa-solid fa-door-open text-cyber-pink/50 text-2xl"></i>
@@ -284,13 +275,13 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="glass-panel p-1 lg:col-span-2 flex flex-col relative">
                     <div class="absolute top-4 left-4 z-[400] bg-cyber-900/80 backdrop-blur px-3 py-1.5 rounded border border-cyber-cyan/30 text-xs font-mono text-cyber-cyan shadow-[0_0_10px_rgba(0,242,254,0.2)]">
-                        <i class="fa-solid fa-satellite mr-2 animate-pulse"></i> TRACKING_MAP_V2
+                        <i class="fa-solid fa-satellite mr-2 animate-pulse"></i> MAPEO POR COORDENADAS
                     </div>
-                    <!-- Mapa base oscuro -->
-                    <div id="map" class="rounded-xl flex-grow bg-[#0B0F19] z-0"></div>
+                    <!-- Mapa base claro -->
+                    <div id="map" class="rounded-xl flex-grow bg-slate-100 z-0 border border-cyber-cyan/20"></div>
                 </div>
                 <div class="glass-panel p-5 flex flex-col justify-center">
-                    <h3 class="text-xs font-mono tracking-widest text-slate-400 mb-4 uppercase"><span class="text-cyber-cyan">>></span> Distribución_Red_Satelital</h3>
+                    <h3 class="text-xs font-mono tracking-widest text-slate-400 mb-4 uppercase"><span class="text-cyber-cyan">>></span> DISTRIBUCIÓN POR ESE</h3>
                     <div class="w-full h-64 relative mt-2">
                         <canvas id="chartRedSalud"></canvas>
                     </div>
@@ -303,13 +294,21 @@
         <!-- ========================================== -->
         <div id="tab-demografia" class="tab-content mb-10">
             <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">DEMOGRAFÍA_Y_EMPLEO</span></h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Identifica comunidad desescolarizada?</p><div class="h-48 relative"><canvas id="c_edu_desescolarizada"></canvas></div></div>
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Jóvenes y adolescentes terminan bachillerato?</p><div class="h-48 relative"><canvas id="c_edu_bachilleres"></canvas></div></div>
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Escenarios educativos con alianzas SENA?</p><div class="h-48 relative"><canvas id="c_edu_sena"></canvas></div></div>
                 <div class="glass-panel p-5 border-t-2 border-cyber-blue/30"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Predomina el empleo informal?</p><div class="h-48 relative"><canvas id="c_lab_informal"></canvas></div></div>
                 <div class="glass-panel p-5 border-t-2 border-cyber-blue/30"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Identifica personas desempleadas?</p><div class="h-48 relative"><canvas id="c_lab_desempleo"></canvas></div></div>
                 <div class="glass-panel p-5 border-t-2 border-cyber-blue/30"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Ingresos por debajo del salario mínimo?</p><div class="h-48 relative"><canvas id="c_lab_ingresos_bajos"></canvas></div></div>
+            </div>
+
+            <!-- Listado de Pregunta Abierta (Sec 2) -->
+            <div class="glass-panel p-5 border-t-2 border-cyber-cyan/50">
+                <h3 class="text-sm font-mono tracking-widest text-cyber-cyan mb-4 flex items-center gap-2"><i class="fa-solid fa-list-ul"></i> > LOG_ACTIVIDAD_ECONÓMICA</h3>
+                <div class="max-h-64 overflow-y-auto pr-2" id="list_actividad_economica">
+                    <!-- Se inyecta por JS -->
+                </div>
             </div>
         </div>
 
@@ -318,7 +317,7 @@
         <!-- ========================================== -->
         <div id="tab-vivienda" class="tab-content mb-10">
             <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">VIVIENDA_Y_SERVICIOS</span></h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> Viviendas que NO cumplen saneamiento en cocina</p><div class="h-40 relative"><canvas id="c_viv_saneamiento_cocina"></canvas></div></div>
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> Viviendas que cocinan en leña</p><div class="h-40 relative"><canvas id="c_viv_lena"></canvas></div></div>
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> Viviendas que NO cumplen saneamiento baterías</p><div class="h-40 relative"><canvas id="c_viv_baterias"></canvas></div></div>
@@ -327,6 +326,14 @@
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Cuenta con suministro de energía eléctrica?</p><div class="h-40 relative"><canvas id="c_serv_energia"></canvas></div></div>
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Cuenta con conexión al alcantarillado?</p><div class="h-40 relative"><canvas id="c_serv_alcantarillado"></canvas></div></div>
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Cuenta con recolección periódica de residuos?</p><div class="h-40 relative"><canvas id="c_amb_basura"></canvas></div></div>
+            </div>
+
+            <!-- Listado de Pregunta Abierta (Sec 3) -->
+            <div class="glass-panel p-5 border-t-2 border-cyber-cyan/50">
+                <h3 class="text-sm font-mono tracking-widest text-cyber-cyan mb-4 flex items-center gap-2"><i class="fa-solid fa-list-ul"></i> > LOG_OBS_VIVIENDA_SERVICIOS</h3>
+                <div class="max-h-64 overflow-y-auto pr-2" id="list_obs_vivienda">
+                    <!-- Se inyecta por JS -->
+                </div>
             </div>
         </div>
 
@@ -351,8 +358,8 @@
         <!-- SECCIÓN 5: SEGURIDAD Y SALUD MENTAL        -->
         <!-- ========================================== -->
         <div id="tab-seguridad-mental" class="tab-content mb-10">
-            <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">SEGURIDAD_Y_MENTAL</span></h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">SEG_Y_MENTAL</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Mecanismos que promuevan seguridad (Alarmas)?</p><div class="h-40 relative"><canvas id="c_seg_seguridad_comunitaria"></canvas></div></div>
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Es frecuente el tema de riñas o güireo?</p><div class="h-40 relative"><canvas id="c_seg_riñas"></canvas></div></div>
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Se identifica presencia de pandillas?</p><div class="h-40 relative"><canvas id="c_seg_pandillas"></canvas></div></div>
@@ -362,56 +369,13 @@
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Identifica intentos de suicidio en su territorio?</p><div class="h-40 relative"><canvas id="c_sm_suicidios"></canvas></div></div>
                 <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Existen organizaciones comunitarias?</p><div class="h-40 relative"><canvas id="c_part_organizaciones"></canvas></div></div>
             </div>
-        </div>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN 3: VIVIENDA Y SERVICIOS            -->
-        <!-- ========================================== -->
-        <div id="tab-vivienda" class="tab-content mb-10">
-            <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">INFRAESTRUCTURA</span></h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Saneamiento_Cocina</p><div class="h-40 relative"><canvas id="c_viv_saneamiento_cocina"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Uso_Leña</p><div class="h-40 relative"><canvas id="c_viv_lena"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Saneamiento_Baños</p><div class="h-40 relative"><canvas id="c_viv_baterias"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Red_Acueducto</p><div class="h-40 relative"><canvas id="c_serv_agua"></canvas></div></div>
-                
-                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Red_Eléctrica</p><div class="h-40 relative"><canvas id="c_serv_energia"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Red_Alcantarillado</p><div class="h-40 relative"><canvas id="c_serv_alcantarillado"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Recolección_Basuras</p><div class="h-40 relative"><canvas id="c_amb_basura"></canvas></div></div>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- SECCIÓN 4: SALUD, RIESGOS Y ZOONOSIS       -->
-        <!-- ========================================== -->
-        <div id="tab-salud-riesgos" class="tab-content mb-10">
-            <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">RIESGOS_Y_SALUD</span></h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Presencia_IPS</p><div class="h-40 relative"><canvas id="c_salud_ips"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Barreras_Salud</p><div class="h-40 relative"><canvas id="c_salud_barreras"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Animales_Vía</p><div class="h-40 relative"><canvas id="c_amb_animales_calle"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Nodos_Vectores</p><div class="h-40 relative"><canvas id="c_amb_vectores"></canvas></div></div>
-                
-                <div class="glass-panel p-5 border-b-2 border-cyber-purple/30"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Riesgo_Deslizamiento</p><div class="h-40 relative"><canvas id="c_riesgo_deslizamiento"></canvas></div></div>
-                <div class="glass-panel p-5 border-b-2 border-cyber-purple/30"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Riesgo_Inundación</p><div class="h-40 relative"><canvas id="c_riesgo_inundacion"></canvas></div></div>
-                <div class="glass-panel p-5 border-b-2 border-cyber-purple/30"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Riesgo_Incendio</p><div class="h-40 relative"><canvas id="c_riesgo_incendio"></canvas></div></div>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- SECCIÓN 5: SEGURIDAD Y SALUD MENTAL        -->
-        <!-- ========================================== -->
-        <div id="tab-seguridad-mental" class="tab-content mb-10">
-            <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">SEG_Y_MENTAL</span></h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Mecanismos_Seguridad</p><div class="h-40 relative"><canvas id="c_seg_seguridad_comunitaria"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Eventos_Violencia</p><div class="h-40 relative"><canvas id="c_seg_riñas"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Nodos_Pandillas</p><div class="h-40 relative"><canvas id="c_seg_pandillas"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Consumo_SPA_Público</p><div class="h-40 relative"><canvas id="c_sm_consumo_calle"></canvas></div></div>
-                
-                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Consumo_Licor</p><div class="h-40 relative"><canvas id="c_sm_licor_calle"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Alerta_Suicidios</p><div class="h-40 relative"><canvas id="c_sm_suicidios"></canvas></div></div>
-                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Nodos_Participación</p><div class="h-40 relative"><canvas id="c_part_organizaciones"></canvas></div></div>
+            <!-- Listado de Pregunta Abierta (Sec 5) -->
+            <div class="glass-panel p-5 border-t-2 border-cyber-cyan/50">
+                <h3 class="text-sm font-mono tracking-widest text-cyber-cyan mb-4 flex items-center gap-2"><i class="fa-solid fa-list-ul"></i> > LOG_OBSERVACIONES_FINALES</h3>
+                <div class="max-h-64 overflow-y-auto pr-2" id="list_obs_finales">
+                    <!-- Se inyecta por JS -->
+                </div>
             </div>
         </div>
 
@@ -473,11 +437,11 @@
         });
 
         function inicializarMapaVacio() {
-            // Utilizamos CartoDB Dark Matter para el aspecto holográfico
+            // Utilizamos CartoDB Voyager para un mapa más claro y visible
             map = L.map('map', {zoomControl: false}).setView([3.422, -76.548], 12);
             L.control.zoom({ position: 'bottomright' }).addTo(map);
             
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; CARTO',
                 subdomains: 'abcd',
                 maxZoom: 20
@@ -486,7 +450,6 @@
         }
 
         function cargarDatos() {
-            // CORRECCIÓN DEL ERROR: Buscar el ícono correcto y validar que exista
             const forceIcon = document.getElementById('force-sync-icon');
             if (forceIcon) forceIcon.classList.add('fa-spin');
             
@@ -552,6 +515,7 @@
                     lab_informal: getRawYesNo(row['lab_informal']),
                     lab_desempleo: getRawYesNo(row['lab_desempleo']),
                     lab_ingresos_bajos: getRawYesNo(row['lab_ingresos_bajos']),
+                    actividad_economica: row['actividad_economica'] || '',
                     
                     viv_saneamiento_cocina: getRawYesNo(row['viv_saneamiento_cocina']),
                     viv_lena: getRawYesNo(row['viv_lena']),
@@ -560,6 +524,7 @@
                     serv_energia: getRawYesNo(row['serv_energia']),
                     serv_alcantarillado: getRawYesNo(row['serv_alcantarillado']),
                     amb_basura: getRawYesNo(row['amb_basura']),
+                    obs_vivienda_servicios: row['obs_vivienda_servicios'] || '',
                     
                     salud_ips: getRawYesNo(row['salud_ips']),
                     salud_barreras: getRawYesNo(row['salud_barreras']),
@@ -575,7 +540,8 @@
                     sm_consumo_calle: getRawYesNo(row['sm_consumo_calle']),
                     sm_licor_calle: getRawYesNo(row['sm_licor_calle']),
                     sm_suicidios: getRawYesNo(row['sm_suicidios']),
-                    part_organizaciones: getRawYesNo(row['part_organizaciones'])
+                    part_organizaciones: getRawYesNo(row['part_organizaciones']),
+                    obs_finales: row['obs_finales'] || ''
                 };
             });
 
@@ -602,6 +568,7 @@
 
             actualizarResumenGlobal(datosFiltrados, esRefrescoAutomatico);
             renderizarTodasLasGraficasIndividuales(datosFiltrados);
+            renderizarTodosLosListados(datosFiltrados);
         }
 
         function actualizarResumenGlobal(data, esRefrescoAutomatico) {
@@ -610,7 +577,6 @@
 
             document.getElementById('kpi-total').innerText = pad(data.length);
             document.getElementById('kpi-comunas').innerText = pad([...new Set(data.map(d => d.comuna))].filter(c => c !== 'N/A').length);
-            document.getElementById('kpi-encuestadores').innerText = pad([...new Set(data.map(d => d.encuestador))].length);
             document.getElementById('kpi-viviendas').innerText = pad(data.reduce((acc, curr) => acc + curr.viviendas, 0));
 
             // Mapa: Marcadores Neón con HTML DivIcon
@@ -631,7 +597,6 @@
 
             data.forEach(d => {
                 if (!isNaN(d.lat) && !isNaN(d.lng) && d.lat !== 0 && d.lng !== 0) {
-                    // Pintar nodos cian (normal) o morados (si hay alguna alerta)
                     const hasAlert = d.salud_barreras==='Sí' || d.riesgo_deslizamiento==='Sí' || d.seg_pandillas==='Sí';
                     const marker = L.marker([d.lat, d.lng], { icon: hasAlert ? cyberIconPurple : cyberIconCyan });
                     marker.bindPopup(`
@@ -667,8 +632,6 @@
             });
         }
 
-        // --- CREADOR DE GRÁFICAS (SÍ vs NO) ESTÉTICA FRÍA/NEÓN ---
-        // Desactivamos la semántica rojo/verde, usamos puros colores fríos/neón
         function renderizarGraficaPregunta(containerId, data, dataField) {
             const counts = { 'Sí': 0, 'No': 0, 'N/A': 0 };
             data.forEach(d => {
@@ -676,7 +639,6 @@
                 if (counts[answer] !== undefined) counts[answer]++;
             });
 
-            // Sí = Cian Neón, No = Morado Neón, N/A = Gris Oscuro
             const bgColors = { 'Sí': C_CYAN, 'No': C_PURPLE, 'N/A': C_SLATE };
 
             const labels = Object.keys(counts).filter(k => counts[k] > 0);
@@ -698,14 +660,14 @@
                         data: datasetData, 
                         backgroundColor: datasetColors, 
                         borderWidth: 2, 
-                        borderColor: C_DARK, // Borde oscuro que funde con el panel
+                        borderColor: C_DARK,
                         hoverOffset: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '75%', // Dona muy delgada y futurista
+                    cutout: '75%', 
                     plugins: {
                         legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6, font: {size: 10} } },
                         tooltip: { 
@@ -726,7 +688,6 @@
         }
 
         function renderizarTodasLasGraficasIndividuales(data) {
-            // Pasamos las variables directamente, sin indicar 'true/false' porque ya no usamos semántica rojo/verde
             renderizarGraficaPregunta('c_edu_desescolarizada', data, 'edu_desescolarizada');
             renderizarGraficaPregunta('c_edu_bachilleres', data, 'edu_bachilleres'); 
             renderizarGraficaPregunta('c_edu_sena', data, 'edu_sena');
@@ -758,6 +719,47 @@
             renderizarGraficaPregunta('c_sm_suicidios', data, 'sm_suicidios');
             renderizarGraficaPregunta('c_part_organizaciones', data, 'part_organizaciones');
         }
+
+        // --- CREADOR DE LISTADOS DE TEXTO ABIERTO ---
+        function renderizarListado(containerId, data, dataField) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; 
+
+            // Filtramos aquellos que tengan contenido válido (que no estén vacíos ni digan "N/A" o "Sin dato")
+            const validEntries = data.filter(d => 
+                d[dataField] && 
+                d[dataField].trim() !== '' && 
+                d[dataField].toLowerCase() !== 'sin dato' && 
+                d[dataField] !== 'N/A'
+            );
+
+            if (validEntries.length === 0) {
+                container.innerHTML = `<div class="text-slate-500 font-mono text-xs italic">> NO_LOGS_FOUND</div>`;
+                return;
+            }
+
+            let html = '<ul class="space-y-3">';
+            validEntries.forEach(entry => {
+                html += `
+                    <li class="bg-cyber-800/50 p-3 border-l-2 border-cyber-cyan rounded-r-lg text-sm text-slate-300 font-mono">
+                        <div class="flex justify-between items-start mb-1 opacity-70 text-[10px]">
+                            <span class="text-cyber-cyan">[LOC: ${entry.barrio}]</span>
+                            <span>TS: ${entry.fecha}</span>
+                        </div>
+                        <p class="leading-relaxed">"${entry[dataField]}"</p>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+        }
+
+        function renderizarTodosLosListados(data) {
+            renderizarListado('list_actividad_economica', data, 'actividad_economica');
+            renderizarListado('list_obs_vivienda', data, 'obs_vivienda_servicios');
+            renderizarListado('list_obs_finales', data, 'obs_finales');
+        }
+
     </script>
 </body>
 </html>
