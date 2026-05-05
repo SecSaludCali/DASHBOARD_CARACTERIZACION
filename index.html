@@ -1,13 +1,37 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Integral - Caracterización PIC Cali</title>
+    <title>Dashboard - Caracterización PIC Cali</title>
 
     <!-- Tailwind CSS para el diseño -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            900: '#0B0F19',
+                            800: '#111827',
+                            700: '#1F2937',
+                            cyan: '#00f2fe',
+                            blue: '#4facfe',
+                            purple: '#a18cd1',
+                            pink: '#fbc2eb'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Inter"', 'sans-serif'],
+                        mono: ['"Fira Code"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
 
     <!-- Leaflet CSS y JS para el Mapa -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -24,124 +48,183 @@
 
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0fdf4;
-            background-image: radial-gradient(#dcfce7 1px, transparent 1px);
-            background-size: 20px 20px;
+            background-color: #050b14;
+            /* Cuadrícula holográfica de fondo */
+            background-image: 
+                linear-gradient(rgba(0, 242, 254, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 242, 254, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: #e2e8f0;
         }
 
         #map {
             height: 500px;
             z-index: 1;
+            background-color: #0B0F19;
         }
 
+        /* Paneles Glassmorphism Oscuro */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-radius: 16px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.2s;
+            border: 1px solid rgba(0, 242, 254, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
         }
 
         .glass-panel:hover {
+            border-color: rgba(0, 242, 254, 0.4);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.15);
             transform: translateY(-2px);
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #15803d; }
+        /* Nodos de mapa futuristas */
+        .cyber-node {
+            background-color: #00f2fe;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00f2fe, 0 0 20px #00f2fe;
+            animation: pulse-glow 2s infinite alternate;
+        }
+        
+        .cyber-node-purple {
+            background-color: #a18cd1;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #a18cd1, 0 0 20px #a18cd1;
+            animation: pulse-glow 2s infinite alternate;
+        }
 
-        /* Tabs Styles */
+        @keyframes pulse-glow {
+            from { transform: scale(0.8); opacity: 0.8; }
+            to { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* Custom Scrollbar Neón */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0B0F19; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 242, 254, 0.5); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 242, 254, 0.8); box-shadow: 0 0 10px #00f2fe; }
+
+        /* Tabs Futuristas */
         .tab-btn {
             white-space: nowrap;
             transition: all 0.3s ease;
+            position: relative;
+            color: #94a3b8;
+        }
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: #00f2fe;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+            box-shadow: 0 -2px 10px #00f2fe;
         }
         .tab-btn.active {
-            border-bottom: 3px solid #059669;
-            color: #059669;
+            color: #00f2fe;
             font-weight: 700;
-            background-color: #ecfdf5;
+            text-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+            background: linear-gradient(to top, rgba(0, 242, 254, 0.05), transparent);
+        }
+        .tab-btn.active::after {
+            transform: scaleX(1);
         }
         .tab-content {
             display: none;
-            animation: fadeIn 0.4s ease-in-out;
+            animation: cyberFade 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .tab-content.active {
             display: block;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes cyberFade {
+            from { opacity: 0; transform: translateY(15px) scale(0.98); filter: blur(4px); }
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        /* Leaflet Popups Oscuros */
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            background: rgba(17, 24, 39, 0.9) !important;
+            backdrop-filter: blur(8px);
+            color: #e2e8f0 !important;
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+        }
+        
+        /* Select Oscuro */
+        select option {
+            background-color: #111827;
+            color: #00f2fe;
         }
     </style>
 </head>
 
-<body class="text-gray-800 antialiased">
+<body class="antialiased selection:bg-cyber-cyan selection:text-black">
 
-    <!-- Navbar Superior -->
-    <nav class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4 shadow-lg sticky top-0 z-50">
+    <!-- Navbar Superior Futurista -->
+    <nav class="bg-cyber-900/80 backdrop-blur-xl border-b border-cyber-cyan/20 text-slate-200 p-4 sticky top-0 z-50 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div class="container mx-auto flex flex-col xl:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="bg-white text-green-700 p-2 rounded-lg shadow">
-                    <i class="fa-solid fa-notes-medical text-2xl"></i>
+            <div class="flex items-center gap-4">
+                <div class="relative group">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-cyber-cyan to-cyber-blue rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-500"></div>
+                    <div class="relative bg-cyber-800 text-cyber-cyan p-2.5 rounded-lg border border-cyber-cyan/30">
+                        <i class="fa-solid fa-satellite-dish text-xl"></i>
+                    </div>
                 </div>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-bold">Observatorio PIC Cali</h1>
-                    <p class="text-xs text-green-100 opacity-90">Análisis individual por pregunta - En vivo</p>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
+                        Observatorio <span class="text-cyber-cyan font-light tracking-widest">Microterritorios</span>
+                    </h1>
+                    <p class="text-[10px] uppercase tracking-widest text-cyber-cyan/70 font-mono">Enlace activo // PIC Cali Data Stream</p>
                 </div>
             </div>
             
-            <div class="flex flex-wrap items-center justify-center gap-3 text-sm">
-                <!-- Filtro Global por ESE -->
-                <div class="bg-white text-green-800 rounded-full px-4 py-2 flex items-center shadow-md border border-green-200">
-                    <i class="fa-solid fa-filter text-green-600 mr-2"></i>
-                    <span class="font-bold mr-2 hidden md:inline">Red de Salud (ESE):</span>
-                    <select id="filtro-red" onchange="aplicarFiltro()" class="bg-transparent font-semibold outline-none cursor-pointer text-gray-700 w-32 md:w-auto">
-                        <option value="Todas">Todas las ESE</option>
+            <div class="flex flex-wrap items-center justify-center gap-4 text-sm font-mono">
+                <!-- Filtro Global -->
+                <div class="bg-cyber-800/50 rounded-lg px-4 py-2 flex items-center border border-cyber-cyan/20 hover:border-cyber-cyan/50 transition-colors">
+                    <i class="fa-solid fa-network-wired text-cyber-cyan mr-3 text-xs"></i>
+                    <select id="filtro-red" onchange="aplicarFiltro()" class="bg-transparent text-cyber-cyan font-bold outline-none cursor-pointer w-32 md:w-auto appearance-none">
+                        <option value="Todas">GLOBAL (Todas las ESE)</option>
                     </select>
                 </div>
 
-                <div class="bg-black bg-opacity-20 px-4 py-2 rounded-full flex items-center gap-2">
-                    <i class="fa-solid fa-clock-rotate-left animate-spin-slow" id="sync-icon"></i>
-                    <span class="hidden sm:inline">Última act:</span> <strong id="last-sync">Cargando...</strong>
+                <div class="bg-cyber-800/50 px-4 py-2 rounded-lg flex items-center gap-3 border border-slate-700/50">
+                    <div class="relative flex h-3 w-3">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyber-cyan opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-cyber-cyan"></span>
+                    </div>
+                    <span class="text-slate-400 text-xs">SYNC:</span> <strong id="last-sync" class="text-cyber-cyan">--:--:--</strong>
                 </div>
                 
-                <button onclick="cargarDatos()" class="hover:bg-white hover:text-green-700 border border-white px-4 py-2 rounded-full transition-colors flex items-center gap-2 font-semibold">
-                    <i class="fa-solid fa-arrows-rotate"></i> Actualizar
+                <button onclick="cargarDatos()" class="group relative px-6 py-2 bg-transparent text-cyber-cyan font-bold uppercase tracking-wider text-xs overflow-hidden rounded-lg border border-cyber-cyan/50 transition-all hover:bg-cyber-cyan/10 hover:shadow-[0_0_15px_rgba(0,242,254,0.3)]">
+                    <span class="relative z-10 flex items-center gap-2">
+                        <!-- CORRECCIÓN DEL ERROR: Se asignó un ID único para evitar el conflicto null -->
+                        <i id="force-sync-icon" class="fa-solid fa-rotate w-3"></i> FORCE_UPDATE
+                    </span>
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- Barra de Pestañas (Navegación de Secciones) -->
-    <div class="bg-white shadow-md sticky top-[88px] xl:top-[76px] z-40 border-b border-gray-200">
-        <div class="container mx-auto overflow-x-auto flex">
-            <button onclick="cambiarPestaña('tab-resumen')" id="btn-tab-resumen" class="tab-btn active px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
-                <i class="fa-solid fa-map-location-dot"></i> Resumen
+    <!-- Barra de Pestañas (Secciones) -->
+    <div class="bg-cyber-900/60 backdrop-blur-md sticky top-[95px] xl:top-[85px] z-40 border-b border-cyber-cyan/10">
+        <div class="container mx-auto overflow-x-auto flex scrollbar-hide">
+            <button onclick="cambiarPestaña('tab-identificacion')" id="btn-tab-identificacion" class="tab-btn active px-6 py-4 text-sm tracking-wide flex items-center gap-2">
+                <i class="fa-solid fa-radar w-4"></i> 1. Identificación y Ubicación
             </button>
-            <button onclick="cambiarPestaña('tab-educacion')" id="btn-tab-educacion" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
-                <i class="fa-solid fa-user-graduate"></i> Educación
+            <button onclick="cambiarPestaña('tab-demografia')" id="btn-tab-demografia" class="tab-btn px-6 py-4 text-sm tracking-wide flex items-center gap-2">
+                <i class="fa-solid fa-user-astronaut w-4"></i> 2. Demografía y Empleo
             </button>
-            <button onclick="cambiarPestaña('tab-laboral')" id="btn-tab-laboral" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
-                <i class="fa-solid fa-briefcase"></i> Laboral
+            <button onclick="cambiarPestaña('tab-vivienda')" id="btn-tab-vivienda" class="tab-btn px-6 py-4 text-sm tracking-wide flex items-center gap-2">
+                <i class="fa-solid fa-city w-4"></i> 3. Vivienda y Servicios
             </button>
-            <button onclick="cambiarPestaña('tab-vivienda')" id="btn-tab-vivienda" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
-                <i class="fa-solid fa-house-chimney"></i> Vivienda y Servicios
+            <button onclick="cambiarPestaña('tab-salud-riesgos')" id="btn-tab-salud-riesgos" class="tab-btn px-6 py-4 text-sm tracking-wide flex items-center gap-2">
+                <i class="fa-solid fa-biohazard w-4"></i> 4. Salud, Riesgos y Zoonosis
             </button>
-            <button onclick="cambiarPestaña('tab-salud')" id="btn-tab-salud" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
-                <i class="fa-solid fa-heart-pulse"></i> Salud
-            </button>
-            <button onclick="cambiarPestaña('tab-ambiental')" id="btn-tab-ambiental" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
-                <i class="fa-solid fa-leaf"></i> Ambiental y Riesgos
-            </button>
-            <button onclick="cambiarPestaña('tab-seguridad')" id="btn-tab-seguridad" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
-                <i class="fa-solid fa-shield-halved"></i> Seguridad
-            </button>
-            <button onclick="cambiarPestaña('tab-mental')" id="btn-tab-mental" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
-                <i class="fa-solid fa-brain"></i> Salud Mental
+            <button onclick="cambiarPestaña('tab-seguridad-mental')" id="btn-tab-seguridad-mental" class="tab-btn px-6 py-4 text-sm tracking-wide flex items-center gap-2">
+                <i class="fa-solid fa-microchip w-4"></i> 5. Seguridad y Salud Mental
             </button>
         </div>
     </div>
@@ -149,71 +232,66 @@
     <!-- Contenedor Principal de Pestañas -->
     <div class="container mx-auto p-4 md:p-6 space-y-6">
 
-        <!-- Mensaje de Error (Oculto) -->
-        <div id="error-alert" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-sm" role="alert">
-            <p class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Error de conexión</p>
-            <p id="error-message">No se pudieron cargar los datos.</p>
+        <div id="error-alert" class="hidden bg-red-900/50 border border-red-500/50 text-red-200 p-4 rounded-lg backdrop-blur-md" role="alert">
+            <p class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-2 text-red-400"></i>ERROR DE ENLACE</p>
+            <p id="error-message" class="text-sm font-mono mt-1 text-red-300/80">Falla de comunicación con el nodo principal.</p>
         </div>
 
         <!-- ========================================== -->
-        <!-- PESTAÑA 1: RESUMEN Y MAPA                  -->
+        <!-- SECCIÓN 1: IDENTIFICACIÓN Y UBICACIÓN      -->
         <!-- ========================================== -->
-        <div id="tab-resumen" class="tab-content active space-y-6">
-            <!-- KPIs -->
+        <div id="tab-identificacion" class="tab-content active space-y-6">
+            <!-- KPIs Futuristas -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="glass-panel p-5 border-l-4 border-emerald-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Encuestas Totales</p>
-                            <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-total">...</h2>
-                        </div>
-                        <div class="p-3 rounded-xl bg-emerald-100 text-emerald-600"><i class="fa-solid fa-clipboard-check text-xl"></i></div>
+                <div class="glass-panel p-5 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-cyber-cyan opacity-10 rounded-full blur-2xl -mr-4 -mt-4 transition-all group-hover:opacity-30"></div>
+                    <p class="text-xs text-cyber-cyan/70 font-mono tracking-widest mb-1">DATA_NODES</p>
+                    <div class="flex justify-between items-end">
+                        <h2 class="text-4xl font-light text-white font-mono" id="kpi-total">000</h2>
+                        <i class="fa-solid fa-database text-cyber-cyan/50 text-2xl"></i>
                     </div>
                 </div>
-                <div class="glass-panel p-5 border-l-4 border-blue-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Comunas Intervenidas</p>
-                            <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-comunas">0</h2>
-                        </div>
-                        <div class="p-3 rounded-xl bg-blue-100 text-blue-600"><i class="fa-solid fa-city text-xl"></i></div>
+                
+                <div class="glass-panel p-5 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-cyber-blue opacity-10 rounded-full blur-2xl -mr-4 -mt-4 transition-all group-hover:opacity-30"></div>
+                    <p class="text-xs text-cyber-blue/70 font-mono tracking-widest mb-1">ZONAS_ACTIVAS</p>
+                    <div class="flex justify-between items-end">
+                        <h2 class="text-4xl font-light text-white font-mono" id="kpi-comunas">00</h2>
+                        <i class="fa-solid fa-map-location text-cyber-blue/50 text-2xl"></i>
                     </div>
                 </div>
-                <div class="glass-panel p-5 border-l-4 border-amber-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Encuestadores Activos</p>
-                            <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-encuestadores">0</h2>
-                        </div>
-                        <div class="p-3 rounded-xl bg-amber-100 text-amber-600"><i class="fa-solid fa-users-gear text-xl"></i></div>
+
+                <div class="glass-panel p-5 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-cyber-purple opacity-10 rounded-full blur-2xl -mr-4 -mt-4 transition-all group-hover:opacity-30"></div>
+                    <p class="text-xs text-cyber-purple/70 font-mono tracking-widest mb-1">AGENTES_CAMPO</p>
+                    <div class="flex justify-between items-end">
+                        <h2 class="text-4xl font-light text-white font-mono" id="kpi-encuestadores">00</h2>
+                        <i class="fa-solid fa-user-ninja text-cyber-purple/50 text-2xl"></i>
                     </div>
                 </div>
-                <div class="glass-panel p-5 border-l-4 border-purple-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Viviendas Visitadas</p>
-                            <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-viviendas">0</h2>
-                        </div>
-                        <div class="p-3 rounded-xl bg-purple-100 text-purple-600"><i class="fa-solid fa-door-open text-xl"></i></div>
+
+                <div class="glass-panel p-5 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-cyber-pink opacity-10 rounded-full blur-2xl -mr-4 -mt-4 transition-all group-hover:opacity-30"></div>
+                    <p class="text-xs text-cyber-pink/70 font-mono tracking-widest mb-1">PUNTOS_VIVIENDA</p>
+                    <div class="flex justify-between items-end">
+                        <h2 class="text-4xl font-light text-white font-mono" id="kpi-viviendas">000</h2>
+                        <i class="fa-solid fa-door-open text-cyber-pink/50 text-2xl"></i>
                     </div>
                 </div>
             </div>
 
-            <!-- Mapa y Grafico General -->
+            <!-- Mapa y Grafico -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="glass-panel p-5 lg:col-span-2 flex flex-col">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-bold text-gray-700"><i class="fa-solid fa-map-location-dot mr-2 text-green-600"></i>Georreferenciación de Visitas</h3>
+                <div class="glass-panel p-1 lg:col-span-2 flex flex-col relative">
+                    <div class="absolute top-4 left-4 z-[400] bg-cyber-900/80 backdrop-blur px-3 py-1.5 rounded border border-cyber-cyan/30 text-xs font-mono text-cyber-cyan shadow-[0_0_10px_rgba(0,242,254,0.2)]">
+                        <i class="fa-solid fa-satellite mr-2 animate-pulse"></i> TRACKING_MAP_V2
                     </div>
-                    <div id="map" class="rounded-xl border border-gray-200 bg-gray-50 flex-grow shadow-inner">
-                        <span class="text-gray-500 m-4 flex items-center justify-center h-full" id="map-placeholder">
-                            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Cargando mapa...
-                        </span>
-                    </div>
+                    <!-- Mapa base oscuro -->
+                    <div id="map" class="rounded-xl flex-grow bg-[#0B0F19] z-0"></div>
                 </div>
                 <div class="glass-panel p-5 flex flex-col justify-center">
-                    <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-network-wired mr-2 text-blue-500"></i>Distribución por ESE (Red)</h3>
-                    <div class="w-full h-64 relative mt-4">
+                    <h3 class="text-xs font-mono tracking-widest text-slate-400 mb-4 uppercase"><span class="text-cyber-cyan">>></span> Distribución_Red_Satelital</h3>
+                    <div class="w-full h-64 relative mt-2">
                         <canvas id="chartRedSalud"></canvas>
                     </div>
                 </div>
@@ -221,94 +299,119 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- PESTAÑA 2: EDUCACIÓN                       -->
+        <!-- SECCIÓN 2: DEMOGRAFÍA Y EMPLEO             -->
         <!-- ========================================== -->
-        <div id="tab-educacion" class="tab-content mb-10">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-indigo-500 pl-3">Módulo: Educación</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2">¿Población Desescolarizada?</h3><div class="h-56 relative"><canvas id="c_edu_desescolarizada"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2">¿Hay Bachilleres?</h3><div class="h-56 relative"><canvas id="c_edu_bachilleres"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2">¿Vinculados al SENA/Superior?</h3><div class="h-56 relative"><canvas id="c_edu_sena"></canvas></div></div>
+        <div id="tab-demografia" class="tab-content mb-10">
+            <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">DEMOGRAFÍA_Y_EMPLEO</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Identifica comunidad desescolarizada?</p><div class="h-48 relative"><canvas id="c_edu_desescolarizada"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Jóvenes y adolescentes terminan bachillerato?</p><div class="h-48 relative"><canvas id="c_edu_bachilleres"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Escenarios educativos con alianzas SENA?</p><div class="h-48 relative"><canvas id="c_edu_sena"></canvas></div></div>
+                <div class="glass-panel p-5 border-t-2 border-cyber-blue/30"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Predomina el empleo informal?</p><div class="h-48 relative"><canvas id="c_lab_informal"></canvas></div></div>
+                <div class="glass-panel p-5 border-t-2 border-cyber-blue/30"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Identifica personas desempleadas?</p><div class="h-48 relative"><canvas id="c_lab_desempleo"></canvas></div></div>
+                <div class="glass-panel p-5 border-t-2 border-cyber-blue/30"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Ingresos por debajo del salario mínimo?</p><div class="h-48 relative"><canvas id="c_lab_ingresos_bajos"></canvas></div></div>
             </div>
         </div>
 
         <!-- ========================================== -->
-        <!-- PESTAÑA 3: LABORAL Y ECONÓMICO             -->
-        <!-- ========================================== -->
-        <div id="tab-laboral" class="tab-content mb-10">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-amber-500 pl-3">Módulo: Trabajo e Ingresos</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2">¿Trabajo Informal?</h3><div class="h-56 relative"><canvas id="c_lab_informal"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2">¿Situación de Desempleo?</h3><div class="h-56 relative"><canvas id="c_lab_desempleo"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2">¿Ingresos Bajos (Menos de 1 SMLV)?</h3><div class="h-56 relative"><canvas id="c_lab_ingresos_bajos"></canvas></div></div>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- PESTAÑA 4: VIVIENDA Y SERVICIOS            -->
+        <!-- SECCIÓN 3: VIVIENDA Y SERVICIOS            -->
         <!-- ========================================== -->
         <div id="tab-vivienda" class="tab-content mb-10">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-blue-500 pl-3">Módulo: Vivienda y Servicios Públicos</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="glass-panel p-5 text-center border-t-4 border-blue-500"><h3 class="font-bold text-gray-700 mb-2">¿Saneamiento Cocina Inadecuado?</h3><div class="h-56 relative"><canvas id="c_viv_saneamiento_cocina"></canvas></div></div>
-                <div class="glass-panel p-5 text-center border-t-4 border-blue-500"><h3 class="font-bold text-gray-700 mb-2">¿Cocinan con Leña/Carbón?</h3><div class="h-56 relative"><canvas id="c_viv_lena"></canvas></div></div>
-                <div class="glass-panel p-5 text-center border-t-4 border-blue-500"><h3 class="font-bold text-gray-700 mb-2">¿Uso de Baterías/Plomo?</h3><div class="h-56 relative"><canvas id="c_viv_baterias"></canvas></div></div>
-                
-                <div class="glass-panel p-5 text-center border-t-4 border-cyan-500"><h3 class="font-bold text-gray-700 mb-2">¿Cuenta con Servicio de Agua?</h3><div class="h-56 relative"><canvas id="c_serv_agua"></canvas></div></div>
-                <div class="glass-panel p-5 text-center border-t-4 border-cyan-500"><h3 class="font-bold text-gray-700 mb-2">¿Cuenta con Energía Eléctrica?</h3><div class="h-56 relative"><canvas id="c_serv_energia"></canvas></div></div>
-                <div class="glass-panel p-5 text-center border-t-4 border-cyan-500"><h3 class="font-bold text-gray-700 mb-2">¿Cuenta con Alcantarillado?</h3><div class="h-56 relative"><canvas id="c_serv_alcantarillado"></canvas></div></div>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- PESTAÑA 5: SALUD Y ACCESO                  -->
-        <!-- ========================================== -->
-        <div id="tab-salud" class="tab-content mb-10">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-red-500 pl-3">Módulo: Salud y Acceso</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-lg">¿Asignados a una IPS?</h3><div class="h-64 relative"><canvas id="c_salud_ips"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-lg">¿Barreras Acceso a Salud?</h3><div class="h-64 relative"><canvas id="c_salud_barreras"></canvas></div></div>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- PESTAÑA 6: AMBIENTAL Y RIESGOS             -->
-        <!-- ========================================== -->
-        <div id="tab-ambiental" class="tab-content mb-10">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-green-600 pl-3">Módulo: Ambiental y Riesgos Geográficos</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Basuras/Escombros Vía?</h3><div class="h-48 relative"><canvas id="c_amb_basura"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Animales Callejeros?</h3><div class="h-48 relative"><canvas id="c_amb_animales_calle"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Vectores/Plagas/Roedores?</h3><div class="h-48 relative"><canvas id="c_amb_vectores"></canvas></div></div>
-                
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Riesgo Deslizamiento?</h3><div class="h-48 relative"><canvas id="c_riesgo_deslizamiento"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Riesgo Inundación?</h3><div class="h-48 relative"><canvas id="c_riesgo_inundacion"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Riesgo Incendio?</h3><div class="h-48 relative"><canvas id="c_riesgo_incendio"></canvas></div></div>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- PESTAÑA 7: SEGURIDAD Y CONVIVENCIA         -->
-        <!-- ========================================== -->
-        <div id="tab-seguridad" class="tab-content mb-10">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-purple-500 pl-3">Módulo: Seguridad Comunitaria</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Seguridad Comunitaria Afectada?</h3><div class="h-56 relative"><canvas id="c_seg_seguridad_comunitaria"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Riñas/Violencia Frecuente?</h3><div class="h-56 relative"><canvas id="c_seg_riñas"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Presencia Pandillas/Grupos?</h3><div class="h-56 relative"><canvas id="c_seg_pandillas"></canvas></div></div>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- PESTAÑA 8: SALUD MENTAL Y SOCIAL           -->
-        <!-- ========================================== -->
-        <div id="tab-mental" class="tab-content mb-10">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-pink-500 pl-3">Módulo: Salud Mental y Participación</h2>
+            <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">VIVIENDA_Y_SERVICIOS</span></h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Consumo SPA Vía Pública?</h3><div class="h-48 relative"><canvas id="c_sm_consumo_calle"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Consumo Licor Vía Pública?</h3><div class="h-48 relative"><canvas id="c_sm_licor_calle"></canvas></div></div>
-                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Casos/Riesgo de Suicidio?</h3><div class="h-48 relative"><canvas id="c_sm_suicidios"></canvas></div></div>
-                <div class="glass-panel p-5 text-center border-t-4 border-green-500"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Participan en Orgs. Locales?</h3><div class="h-48 relative"><canvas id="c_part_organizaciones"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> Viviendas que NO cumplen saneamiento en cocina</p><div class="h-40 relative"><canvas id="c_viv_saneamiento_cocina"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> Viviendas que cocinan en leña</p><div class="h-40 relative"><canvas id="c_viv_lena"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> Viviendas que NO cumplen saneamiento baterías</p><div class="h-40 relative"><canvas id="c_viv_baterias"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Cuenta con suministro/acceso de agua potable?</p><div class="h-40 relative"><canvas id="c_serv_agua"></canvas></div></div>
+                
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Cuenta con suministro de energía eléctrica?</p><div class="h-40 relative"><canvas id="c_serv_energia"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Cuenta con conexión al alcantarillado?</p><div class="h-40 relative"><canvas id="c_serv_alcantarillado"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Cuenta con recolección periódica de residuos?</p><div class="h-40 relative"><canvas id="c_amb_basura"></canvas></div></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 4: SALUD, RIESGOS Y ZOONOSIS       -->
+        <!-- ========================================== -->
+        <div id="tab-salud-riesgos" class="tab-content mb-10">
+            <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">SALUD_RIESGOS_ZOONOSIS</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿El territorio cuenta con presencia de IPS?</p><div class="h-40 relative"><canvas id="c_salud_ips"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Las IPS presentan barreras en el servicio?</p><div class="h-40 relative"><canvas id="c_salud_barreras"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Presencia de animales en vía pública?</p><div class="h-40 relative"><canvas id="c_amb_animales_calle"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Evidencia de madrigueras o depósitos de agua?</p><div class="h-40 relative"><canvas id="c_amb_vectores"></canvas></div></div>
+                
+                <div class="glass-panel p-5 border-b-2 border-cyber-purple/30"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Riesgo por deslizamiento?</p><div class="h-40 relative"><canvas id="c_riesgo_deslizamiento"></canvas></div></div>
+                <div class="glass-panel p-5 border-b-2 border-cyber-purple/30"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Riesgo por inundación?</p><div class="h-40 relative"><canvas id="c_riesgo_inundacion"></canvas></div></div>
+                <div class="glass-panel p-5 border-b-2 border-cyber-purple/30"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Riesgo por incendio?</p><div class="h-40 relative"><canvas id="c_riesgo_incendio"></canvas></div></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 5: SEGURIDAD Y SALUD MENTAL        -->
+        <!-- ========================================== -->
+        <div id="tab-seguridad-mental" class="tab-content mb-10">
+            <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">SEGURIDAD_Y_MENTAL</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Mecanismos que promuevan seguridad (Alarmas)?</p><div class="h-40 relative"><canvas id="c_seg_seguridad_comunitaria"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Es frecuente el tema de riñas o güireo?</p><div class="h-40 relative"><canvas id="c_seg_riñas"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Se identifica presencia de pandillas?</p><div class="h-40 relative"><canvas id="c_seg_pandillas"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Zonas donde se consumen sustancias?</p><div class="h-40 relative"><canvas id="c_sm_consumo_calle"></canvas></div></div>
+                
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Consumo de licor en área pública?</p><div class="h-40 relative"><canvas id="c_sm_licor_calle"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Identifica intentos de suicidio en su territorio?</p><div class="h-40 relative"><canvas id="c_sm_suicidios"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[11px] font-mono text-cyber-cyan/90 mb-4 h-8 line-clamp-2 leading-tight">> ¿Existen organizaciones comunitarias?</p><div class="h-40 relative"><canvas id="c_part_organizaciones"></canvas></div></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 3: VIVIENDA Y SERVICIOS            -->
+        <!-- ========================================== -->
+        <div id="tab-vivienda" class="tab-content mb-10">
+            <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">INFRAESTRUCTURA</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Saneamiento_Cocina</p><div class="h-40 relative"><canvas id="c_viv_saneamiento_cocina"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Uso_Leña</p><div class="h-40 relative"><canvas id="c_viv_lena"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Saneamiento_Baños</p><div class="h-40 relative"><canvas id="c_viv_baterias"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Red_Acueducto</p><div class="h-40 relative"><canvas id="c_serv_agua"></canvas></div></div>
+                
+                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Red_Eléctrica</p><div class="h-40 relative"><canvas id="c_serv_energia"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Red_Alcantarillado</p><div class="h-40 relative"><canvas id="c_serv_alcantarillado"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-xs font-mono text-slate-400 mb-4">> Recolección_Basuras</p><div class="h-40 relative"><canvas id="c_amb_basura"></canvas></div></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 4: SALUD, RIESGOS Y ZOONOSIS       -->
+        <!-- ========================================== -->
+        <div id="tab-salud-riesgos" class="tab-content mb-10">
+            <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">RIESGOS_Y_SALUD</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Presencia_IPS</p><div class="h-40 relative"><canvas id="c_salud_ips"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Barreras_Salud</p><div class="h-40 relative"><canvas id="c_salud_barreras"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Animales_Vía</p><div class="h-40 relative"><canvas id="c_amb_animales_calle"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Nodos_Vectores</p><div class="h-40 relative"><canvas id="c_amb_vectores"></canvas></div></div>
+                
+                <div class="glass-panel p-5 border-b-2 border-cyber-purple/30"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Riesgo_Deslizamiento</p><div class="h-40 relative"><canvas id="c_riesgo_deslizamiento"></canvas></div></div>
+                <div class="glass-panel p-5 border-b-2 border-cyber-purple/30"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Riesgo_Inundación</p><div class="h-40 relative"><canvas id="c_riesgo_inundacion"></canvas></div></div>
+                <div class="glass-panel p-5 border-b-2 border-cyber-purple/30"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Riesgo_Incendio</p><div class="h-40 relative"><canvas id="c_riesgo_incendio"></canvas></div></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 5: SEGURIDAD Y SALUD MENTAL        -->
+        <!-- ========================================== -->
+        <div id="tab-seguridad-mental" class="tab-content mb-10">
+            <h2 class="text-xl font-light text-white mb-6 border-l-2 border-cyber-cyan pl-3 font-mono tracking-wide">MÓDULO::<span class="font-bold text-cyber-cyan">SEG_Y_MENTAL</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Mecanismos_Seguridad</p><div class="h-40 relative"><canvas id="c_seg_seguridad_comunitaria"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Eventos_Violencia</p><div class="h-40 relative"><canvas id="c_seg_riñas"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Nodos_Pandillas</p><div class="h-40 relative"><canvas id="c_seg_pandillas"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Consumo_SPA_Público</p><div class="h-40 relative"><canvas id="c_sm_consumo_calle"></canvas></div></div>
+                
+                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Consumo_Licor</p><div class="h-40 relative"><canvas id="c_sm_licor_calle"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Alerta_Suicidios</p><div class="h-40 relative"><canvas id="c_sm_suicidios"></canvas></div></div>
+                <div class="glass-panel p-5"><p class="text-[10px] font-mono text-slate-400 mb-4 truncate">> Nodos_Participación</p><div class="h-40 relative"><canvas id="c_part_organizaciones"></canvas></div></div>
             </div>
         </div>
 
@@ -316,6 +419,16 @@
 
     <!-- Script Principal -->
     <script>
+        // Configuración Global Chart.js para Modo Oscuro
+        Chart.defaults.color = '#94a3b8'; // slate-400 text
+        Chart.defaults.font.family = '"Fira Code", monospace';
+        
+        // Colores Cyberpunk Paleta Global (Fríos, Neón, Morados)
+        const C_CYAN = '#00f2fe';    // Sí
+        const C_PURPLE = '#a18cd1';  // No
+        const C_SLATE = '#334155';   // N/A
+        const C_DARK = '#0B0F19';    // Fondo chart border
+
         // --- GESTIÓN DE PESTAÑAS ---
         function cambiarPestaña(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -341,7 +454,6 @@
 
         const sheetId = '1fWf3Ktd3jxeRWFHCQaGyDrKqRzGi2y_4gkfFsVl9yUs';
 
-        // Lógica de validación
         const getRawYesNo = (val) => {
             if (!val) return 'N/A';
             const v = val.trim().toLowerCase();
@@ -357,14 +469,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             inicializarMapaVacio();
             cargarDatos();
-            setInterval(cargarDatos, 15000); // Auto update
+            setInterval(cargarDatos, 15000); 
         });
 
         function inicializarMapaVacio() {
-            document.getElementById('map-placeholder').style.display = 'none';
-            map = L.map('map').setView([3.422, -76.548], 12);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap &copy; CARTO',
+            // Utilizamos CartoDB Dark Matter para el aspecto holográfico
+            map = L.map('map', {zoomControl: false}).setView([3.422, -76.548], 12);
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; CARTO',
                 subdomains: 'abcd',
                 maxZoom: 20
             }).addTo(map);
@@ -372,8 +486,9 @@
         }
 
         function cargarDatos() {
-            const syncIcon = document.getElementById('sync-icon');
-            syncIcon.classList.add('fa-spin');
+            // CORRECCIÓN DEL ERROR: Buscar el ícono correcto y validar que exista
+            const forceIcon = document.getElementById('force-sync-icon');
+            if (forceIcon) forceIcon.classList.add('fa-spin');
             
             const csvUrlBase = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
             const urlConCache = csvUrlBase + '&_t=' + new Date().getTime();
@@ -383,12 +498,12 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function (results) {
-                    syncIcon.classList.remove('fa-spin');
+                    if (forceIcon) forceIcon.classList.remove('fa-spin');
                     ultimaActualizacionStr = formatTime(new Date());
                     document.getElementById('last-sync').innerText = ultimaActualizacionStr;
 
                     if (results.data.length > 0 && Object.keys(results.data[0]).some(k => k.toLowerCase().includes('<!doctype') || k.toLowerCase().includes('<html'))) {
-                        mostrarError("El Google Sheets es privado. Ve a Archivo > Compartir y configúralo como 'Cualquier persona con el enlace'.");
+                        mostrarError("Acceso denegado. Base de datos requiere permisos públicos.");
                         return;
                     }
                     
@@ -396,8 +511,8 @@
                     procesarResultados(results.data);
                 },
                 error: function (err) {
-                    syncIcon.classList.remove('fa-spin');
-                    mostrarError("Error al conectar con Google Sheets. Verificando red...");
+                    if (forceIcon) forceIcon.classList.remove('fa-spin');
+                    mostrarError("Falla de enlace. Reintentando protocolo de conexión...");
                 }
             });
         }
@@ -417,13 +532,11 @@
                 return 0;
             };
 
-            // Lectura de cada variable exactamente como está en el CSV original
             todosLosDatos = rawData.map(row => {
                 let lat = extraerNumero(row['GPS_Latitud']);
                 let lng = extraerNumero(row['GPS_Longitud']);
                 
                 return {
-                    // INFO GENERAL
                     fecha: row['fecha_visita'] || 'Sin dato',
                     red_salud: (row['red_salud'] || 'No especificada').trim(),
                     encuestador: row['encuestador'] || 'Anónimo',
@@ -433,42 +546,32 @@
                     lat: isNaN(lat) ? 0 : lat,
                     lng: isNaN(lng) ? 0 : lng,
                     
-                    // SECCIÓN 2: EDUCACIÓN
                     edu_desescolarizada: getRawYesNo(row['edu_desescolarizada']),
                     edu_bachilleres: getRawYesNo(row['edu_bachilleres']),
                     edu_sena: getRawYesNo(row['edu_sena']),
-                    
-                    // SECCIÓN 3: LABORAL
                     lab_informal: getRawYesNo(row['lab_informal']),
                     lab_desempleo: getRawYesNo(row['lab_desempleo']),
                     lab_ingresos_bajos: getRawYesNo(row['lab_ingresos_bajos']),
                     
-                    // SECCIÓN 4: VIVIENDA / SERVICIOS (viv_ y serv_)
                     viv_saneamiento_cocina: getRawYesNo(row['viv_saneamiento_cocina']),
                     viv_lena: getRawYesNo(row['viv_lena']),
                     viv_baterias: getRawYesNo(row['viv_baterias']),
                     serv_agua: getRawYesNo(row['serv_agua']),
                     serv_energia: getRawYesNo(row['serv_energia']),
                     serv_alcantarillado: getRawYesNo(row['serv_alcantarillado']),
+                    amb_basura: getRawYesNo(row['amb_basura']),
                     
-                    // SECCIÓN 5: SALUD (salud_)
                     salud_ips: getRawYesNo(row['salud_ips']),
                     salud_barreras: getRawYesNo(row['salud_barreras']),
-
-                    // SECCIÓN 6: AMBIENTAL Y RIESGOS (amb_ y riesgo_)
-                    amb_basura: getRawYesNo(row['amb_basura']),
                     amb_animales_calle: getRawYesNo(row['amb_animales_calle']),
                     amb_vectores: getRawYesNo(row['amb_vectores']),
                     riesgo_deslizamiento: getRawYesNo(row['riesgo_deslizamiento']),
                     riesgo_inundacion: getRawYesNo(row['riesgo_inundacion']),
                     riesgo_incendio: getRawYesNo(row['riesgo_incendio']),
                     
-                    // SECCIÓN 7: SEGURIDAD (seg_)
                     seg_seguridad_comunitaria: getRawYesNo(row['seg_seguridad_comunitaria']),
                     seg_riñas: getRawYesNo(row['seg_riñas']),
                     seg_pandillas: getRawYesNo(row['seg_pandillas']),
-
-                    // SECCIÓN 8: SALUD MENTAL (sm_ y part_)
                     sm_consumo_calle: getRawYesNo(row['sm_consumo_calle']),
                     sm_licor_calle: getRawYesNo(row['sm_licor_calle']),
                     sm_suicidios: getRawYesNo(row['sm_suicidios']),
@@ -484,7 +587,7 @@
             const selectElement = document.getElementById('filtro-red');
             const redesUnicas = [...new Set(todosLosDatos.map(d => d.red_salud))].filter(Boolean).sort();
             
-            selectElement.innerHTML = '<option value="Todas">Todas las ESE</option>';
+            selectElement.innerHTML = '<option value="Todas">GLOBAL (Todas las ESE)</option>';
             redesUnicas.forEach(red => {
                 if(red !== 'No especificada') selectElement.innerHTML += `<option value="${red}">${red}</option>`;
             });
@@ -502,20 +605,42 @@
         }
 
         function actualizarResumenGlobal(data, esRefrescoAutomatico) {
-            // KPIs
-            document.getElementById('kpi-total').innerText = data.length;
-            document.getElementById('kpi-comunas').innerText = [...new Set(data.map(d => d.comuna))].filter(c => c !== 'N/A').length;
-            document.getElementById('kpi-encuestadores').innerText = [...new Set(data.map(d => d.encuestador))].length;
-            document.getElementById('kpi-viviendas').innerText = data.reduce((acc, curr) => acc + curr.viviendas, 0);
+            // Formateo números con ceros a la izquierda para dar vibra tecnológica (ej 003, 045)
+            const pad = (num) => num.toString().padStart(3, '0');
 
-            // Mapa
+            document.getElementById('kpi-total').innerText = pad(data.length);
+            document.getElementById('kpi-comunas').innerText = pad([...new Set(data.map(d => d.comuna))].filter(c => c !== 'N/A').length);
+            document.getElementById('kpi-encuestadores').innerText = pad([...new Set(data.map(d => d.encuestador))].length);
+            document.getElementById('kpi-viviendas').innerText = pad(data.reduce((acc, curr) => acc + curr.viviendas, 0));
+
+            // Mapa: Marcadores Neón con HTML DivIcon
             markersGroup.clearLayers();
-            const blueIcon = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34] });
+            
+            const cyberIconCyan = L.divIcon({
+                className: 'custom-icon',
+                html: '<div class="cyber-node w-3 h-3"></div>',
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            });
+            const cyberIconPurple = L.divIcon({
+                className: 'custom-icon',
+                html: '<div class="cyber-node-purple w-3 h-3"></div>',
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            });
 
             data.forEach(d => {
                 if (!isNaN(d.lat) && !isNaN(d.lng) && d.lat !== 0 && d.lng !== 0) {
-                    const marker = L.marker([d.lat, d.lng], { icon: blueIcon });
-                    marker.bindPopup(`<div class="text-sm"><strong>${d.barrio}</strong><br/>${d.fecha}<br/>Red: ${d.red_salud}</div>`);
+                    // Pintar nodos cian (normal) o morados (si hay alguna alerta)
+                    const hasAlert = d.salud_barreras==='Sí' || d.riesgo_deslizamiento==='Sí' || d.seg_pandillas==='Sí';
+                    const marker = L.marker([d.lat, d.lng], { icon: hasAlert ? cyberIconPurple : cyberIconCyan });
+                    marker.bindPopup(`
+                        <div class="font-mono p-1">
+                            <strong class="text-cyber-cyan block mb-1 uppercase tracking-widest text-xs border-b border-cyber-cyan/30 pb-1">>> LOC: ${d.barrio}</strong>
+                            <p class="text-xs text-slate-300 mb-1"><span class="text-cyber-blue">TS:</span> ${d.fecha}</p>
+                            <p class="text-xs text-slate-300"><span class="text-cyber-blue">NET:</span> ${d.red_salud}</p>
+                        </div>
+                    `);
                     markersGroup.addLayer(marker);
                 }
             });
@@ -524,31 +649,35 @@
                 map.fitBounds(markersGroup.getBounds(), { padding: [40, 40], maxZoom: 15 });
             }
 
-            // Gráfico General
+            // Gráfico General (Redes)
             const redesCounts = data.reduce((acc, curr) => { acc[curr.red_salud] = (acc[curr.red_salud] || 0) + 1; return acc; }, {});
             if (chartInstances['chartRedSalud']) chartInstances['chartRedSalud'].destroy();
             chartInstances['chartRedSalud'] = new Chart(document.getElementById('chartRedSalud'), {
                 type: 'pie',
                 data: {
                     labels: Object.keys(redesCounts),
-                    datasets: [{ data: Object.values(redesCounts), backgroundColor: ['#059669', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'] }]
+                    datasets: [{ 
+                        data: Object.values(redesCounts), 
+                        backgroundColor: ['#00f2fe', '#4facfe', '#a18cd1', '#fbc2eb', '#4338ca', '#3b82f6'],
+                        borderColor: C_DARK,
+                        borderWidth: 2
+                    }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
             });
         }
 
-        // --- CREADOR DE GRÁFICAS (SÍ vs NO) ---
-        function renderizarGraficaPregunta(containerId, data, dataField, isPositiveYes = false) {
+        // --- CREADOR DE GRÁFICAS (SÍ vs NO) ESTÉTICA FRÍA/NEÓN ---
+        // Desactivamos la semántica rojo/verde, usamos puros colores fríos/neón
+        function renderizarGraficaPregunta(containerId, data, dataField) {
             const counts = { 'Sí': 0, 'No': 0, 'N/A': 0 };
             data.forEach(d => {
                 const answer = d[dataField];
                 if (counts[answer] !== undefined) counts[answer]++;
             });
 
-            // Lógica semántica: Si responder "Sí" es algo positivo (ej: Tiene Agua), se pinta Verde. Si es negativo (ej: Desempleo), Rojo.
-            const colorSi = isPositiveYes ? '#10b981' : '#ef4444'; 
-            const colorNo = isPositiveYes ? '#ef4444' : '#10b981';
-            const bgColors = { 'Sí': colorSi, 'No': colorNo, 'N/A': '#cbd5e1' };
+            // Sí = Cian Neón, No = Morado Neón, N/A = Gris Oscuro
+            const bgColors = { 'Sí': C_CYAN, 'No': C_PURPLE, 'N/A': C_SLATE };
 
             const labels = Object.keys(counts).filter(k => counts[k] > 0);
             const datasetData = labels.map(k => counts[k]);
@@ -558,67 +687,76 @@
             if (chartInstances[containerId]) chartInstances[containerId].destroy();
 
             if (datasetData.length === 0) {
-                labels.push('Sin Datos'); datasetData.push(1); datasetColors.push('#f1f5f9');
+                labels.push('NO_DATA'); datasetData.push(1); datasetColors.push(C_SLATE);
             }
 
             chartInstances[containerId] = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: labels,
-                    datasets: [{ data: datasetData, backgroundColor: datasetColors, borderWidth: 1, borderColor: '#ffffff' }]
+                    datasets: [{ 
+                        data: datasetData, 
+                        backgroundColor: datasetColors, 
+                        borderWidth: 2, 
+                        borderColor: C_DARK, // Borde oscuro que funde con el panel
+                        hoverOffset: 4
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '60%',
+                    cutout: '75%', // Dona muy delgada y futurista
                     plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10 } },
-                        tooltip: { callbacks: { label: function(context) {
-                            let val = context.raw;
-                            let total = context.chart._metasets[context.datasetIndex].total;
-                            let percentage = Math.round((val / total) * 100) + "%";
-                            return ` ${val} encuestas (${percentage})`;
-                        }}}
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6, font: {size: 10} } },
+                        tooltip: { 
+                            backgroundColor: 'rgba(11, 15, 25, 0.9)',
+                            titleColor: '#00f2fe',
+                            borderColor: 'rgba(0, 242, 254, 0.3)',
+                            borderWidth: 1,
+                            callbacks: { label: function(context) {
+                                let val = context.raw;
+                                let total = context.chart._metasets[context.datasetIndex].total;
+                                let percentage = Math.round((val / total) * 100) + "%";
+                                return ` DATA: ${val} [${percentage}]`;
+                            }}
+                        }
                     }
                 }
             });
         }
 
         function renderizarTodasLasGraficasIndividuales(data) {
-            // SECCIÓN 2: Demografía y Empleo
-            renderizarGraficaPregunta('c_edu_desescolarizada', data, 'edu_desescolarizada', false);
-            renderizarGraficaPregunta('c_edu_bachilleres', data, 'edu_bachilleres', true); 
-            renderizarGraficaPregunta('c_edu_sena', data, 'edu_sena', true);
-            renderizarGraficaPregunta('c_lab_informal', data, 'lab_informal', false); 
-            renderizarGraficaPregunta('c_lab_desempleo', data, 'lab_desempleo', false);
-            renderizarGraficaPregunta('c_lab_ingresos_bajos', data, 'lab_ingresos_bajos', false);
+            // Pasamos las variables directamente, sin indicar 'true/false' porque ya no usamos semántica rojo/verde
+            renderizarGraficaPregunta('c_edu_desescolarizada', data, 'edu_desescolarizada');
+            renderizarGraficaPregunta('c_edu_bachilleres', data, 'edu_bachilleres'); 
+            renderizarGraficaPregunta('c_edu_sena', data, 'edu_sena');
+            renderizarGraficaPregunta('c_lab_informal', data, 'lab_informal'); 
+            renderizarGraficaPregunta('c_lab_desempleo', data, 'lab_desempleo');
+            renderizarGraficaPregunta('c_lab_ingresos_bajos', data, 'lab_ingresos_bajos');
 
-            // SECCIÓN 3: Vivienda y Servicios
-            renderizarGraficaPregunta('c_viv_saneamiento_cocina', data, 'viv_saneamiento_cocina', false);
-            renderizarGraficaPregunta('c_viv_lena', data, 'viv_lena', false);
-            renderizarGraficaPregunta('c_viv_baterias', data, 'viv_baterias', false);
-            renderizarGraficaPregunta('c_serv_agua', data, 'serv_agua', true); 
-            renderizarGraficaPregunta('c_serv_energia', data, 'serv_energia', true);
-            renderizarGraficaPregunta('c_serv_alcantarillado', data, 'serv_alcantarillado', true);
-            renderizarGraficaPregunta('c_amb_basura', data, 'amb_basura', true); // "Cuenta con recolección" -> true=Good
+            renderizarGraficaPregunta('c_viv_saneamiento_cocina', data, 'viv_saneamiento_cocina');
+            renderizarGraficaPregunta('c_viv_lena', data, 'viv_lena');
+            renderizarGraficaPregunta('c_viv_baterias', data, 'viv_baterias');
+            renderizarGraficaPregunta('c_serv_agua', data, 'serv_agua'); 
+            renderizarGraficaPregunta('c_serv_energia', data, 'serv_energia');
+            renderizarGraficaPregunta('c_serv_alcantarillado', data, 'serv_alcantarillado');
+            renderizarGraficaPregunta('c_amb_basura', data, 'amb_basura'); 
 
-            // SECCIÓN 4: Salud, Riesgos y Zoonosis
-            renderizarGraficaPregunta('c_salud_ips', data, 'salud_ips', true); 
-            renderizarGraficaPregunta('c_salud_barreras', data, 'salud_barreras', false);
-            renderizarGraficaPregunta('c_amb_animales_calle', data, 'amb_animales_calle', false);
-            renderizarGraficaPregunta('c_amb_vectores', data, 'amb_vectores', false);
-            renderizarGraficaPregunta('c_riesgo_deslizamiento', data, 'riesgo_deslizamiento', false);
-            renderizarGraficaPregunta('c_riesgo_inundacion', data, 'riesgo_inundacion', false);
-            renderizarGraficaPregunta('c_riesgo_incendio', data, 'riesgo_incendio', false);
+            renderizarGraficaPregunta('c_salud_ips', data, 'salud_ips'); 
+            renderizarGraficaPregunta('c_salud_barreras', data, 'salud_barreras');
+            renderizarGraficaPregunta('c_amb_animales_calle', data, 'amb_animales_calle');
+            renderizarGraficaPregunta('c_amb_vectores', data, 'amb_vectores');
+            renderizarGraficaPregunta('c_riesgo_deslizamiento', data, 'riesgo_deslizamiento');
+            renderizarGraficaPregunta('c_riesgo_inundacion', data, 'riesgo_inundacion');
+            renderizarGraficaPregunta('c_riesgo_incendio', data, 'riesgo_incendio');
 
-            // SECCIÓN 5: Seguridad y Salud Mental
-            renderizarGraficaPregunta('c_seg_seguridad_comunitaria', data, 'seg_seguridad_comunitaria', true); // "Existen mecanismos" -> true=Good
-            renderizarGraficaPregunta('c_seg_riñas', data, 'seg_riñas', false);
-            renderizarGraficaPregunta('c_seg_pandillas', data, 'seg_pandillas', false);
-            renderizarGraficaPregunta('c_sm_consumo_calle', data, 'sm_consumo_calle', false);
-            renderizarGraficaPregunta('c_sm_licor_calle', data, 'sm_licor_calle', false);
-            renderizarGraficaPregunta('c_sm_suicidios', data, 'sm_suicidios', false);
-            renderizarGraficaPregunta('c_part_organizaciones', data, 'part_organizaciones', true);
+            renderizarGraficaPregunta('c_seg_seguridad_comunitaria', data, 'seg_seguridad_comunitaria'); 
+            renderizarGraficaPregunta('c_seg_riñas', data, 'seg_riñas');
+            renderizarGraficaPregunta('c_seg_pandillas', data, 'seg_pandillas');
+            renderizarGraficaPregunta('c_sm_consumo_calle', data, 'sm_consumo_calle');
+            renderizarGraficaPregunta('c_sm_licor_calle', data, 'sm_licor_calle');
+            renderizarGraficaPregunta('c_sm_suicidios', data, 'sm_suicidios');
+            renderizarGraficaPregunta('c_part_organizaciones', data, 'part_organizaciones');
         }
     </script>
 </body>
