@@ -25,13 +25,13 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0fdf4; /* Fondo verde muy claro/salud */
+            background-color: #f0fdf4;
             background-image: radial-gradient(#dcfce7 1px, transparent 1px);
             background-size: 20px 20px;
         }
 
         #map {
-            height: 450px;
+            height: 500px;
             z-index: 1;
         }
 
@@ -49,16 +49,39 @@
         }
 
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #15803d; }
+
+        /* Tabs Styles */
+        .tab-btn {
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            border-bottom: 3px solid #059669;
+            color: #059669;
+            font-weight: 700;
+            background-color: #ecfdf5;
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 
 <body class="text-gray-800 antialiased">
 
-    <!-- Navbar -->
+    <!-- Navbar Superior -->
     <nav class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col xl:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
@@ -67,19 +90,17 @@
                 </div>
                 <div>
                     <h1 class="text-xl md:text-2xl font-bold">Observatorio PIC Cali</h1>
-                    <p class="text-xs text-green-100 opacity-90">Conectado en vivo a Google Sheets</p>
+                    <p class="text-xs text-green-100 opacity-90">Análisis individual por pregunta - En vivo</p>
                 </div>
             </div>
             
             <div class="flex flex-wrap items-center justify-center gap-3 text-sm">
-                
-                <!-- NUEVO: Filtro por ESE -->
+                <!-- Filtro Global por ESE -->
                 <div class="bg-white text-green-800 rounded-full px-4 py-2 flex items-center shadow-md border border-green-200">
                     <i class="fa-solid fa-filter text-green-600 mr-2"></i>
                     <span class="font-bold mr-2 hidden md:inline">Red de Salud (ESE):</span>
-                    <select id="filtro-red" onchange="aplicarFiltro()" class="bg-transparent font-semibold outline-none cursor-pointer text-gray-700">
+                    <select id="filtro-red" onchange="aplicarFiltro()" class="bg-transparent font-semibold outline-none cursor-pointer text-gray-700 w-32 md:w-auto">
                         <option value="Todas">Todas las ESE</option>
-                        <!-- Opciones dinámicas -->
                     </select>
                 </div>
 
@@ -95,7 +116,37 @@
         </div>
     </nav>
 
-    <!-- Contenido Principal -->
+    <!-- Barra de Pestañas (Navegación de Secciones) -->
+    <div class="bg-white shadow-md sticky top-[88px] xl:top-[76px] z-40 border-b border-gray-200">
+        <div class="container mx-auto overflow-x-auto flex">
+            <button onclick="cambiarPestaña('tab-resumen')" id="btn-tab-resumen" class="tab-btn active px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
+                <i class="fa-solid fa-map-location-dot"></i> Resumen
+            </button>
+            <button onclick="cambiarPestaña('tab-educacion')" id="btn-tab-educacion" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
+                <i class="fa-solid fa-user-graduate"></i> Educación
+            </button>
+            <button onclick="cambiarPestaña('tab-laboral')" id="btn-tab-laboral" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
+                <i class="fa-solid fa-briefcase"></i> Laboral
+            </button>
+            <button onclick="cambiarPestaña('tab-vivienda')" id="btn-tab-vivienda" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
+                <i class="fa-solid fa-house-chimney"></i> Vivienda y Servicios
+            </button>
+            <button onclick="cambiarPestaña('tab-salud')" id="btn-tab-salud" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
+                <i class="fa-solid fa-heart-pulse"></i> Salud
+            </button>
+            <button onclick="cambiarPestaña('tab-ambiental')" id="btn-tab-ambiental" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
+                <i class="fa-solid fa-leaf"></i> Ambiental y Riesgos
+            </button>
+            <button onclick="cambiarPestaña('tab-seguridad')" id="btn-tab-seguridad" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved"></i> Seguridad
+            </button>
+            <button onclick="cambiarPestaña('tab-mental')" id="btn-tab-mental" class="tab-btn px-6 py-4 text-gray-600 font-semibold hover:bg-gray-50 flex items-center gap-2">
+                <i class="fa-solid fa-brain"></i> Salud Mental
+            </button>
+        </div>
+    </div>
+
+    <!-- Contenedor Principal de Pestañas -->
     <div class="container mx-auto p-4 md:p-6 space-y-6">
 
         <!-- Mensaje de Error (Oculto) -->
@@ -104,169 +155,201 @@
             <p id="error-message">No se pudieron cargar los datos.</p>
         </div>
 
-        <!-- Fila de KPIs Principales -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div class="glass-panel p-5 border-l-4 border-emerald-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Total Encuestas</p>
-                        <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-total">...</h2>
+        <!-- ========================================== -->
+        <!-- PESTAÑA 1: RESUMEN Y MAPA                  -->
+        <!-- ========================================== -->
+        <div id="tab-resumen" class="tab-content active space-y-6">
+            <!-- KPIs -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass-panel p-5 border-l-4 border-emerald-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Encuestas Totales</p>
+                            <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-total">...</h2>
+                        </div>
+                        <div class="p-3 rounded-xl bg-emerald-100 text-emerald-600"><i class="fa-solid fa-clipboard-check text-xl"></i></div>
                     </div>
-                    <div class="p-3 rounded-xl bg-emerald-100 text-emerald-600"><i class="fa-solid fa-users text-xl"></i></div>
+                </div>
+                <div class="glass-panel p-5 border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Comunas Intervenidas</p>
+                            <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-comunas">0</h2>
+                        </div>
+                        <div class="p-3 rounded-xl bg-blue-100 text-blue-600"><i class="fa-solid fa-city text-xl"></i></div>
+                    </div>
+                </div>
+                <div class="glass-panel p-5 border-l-4 border-amber-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Encuestadores Activos</p>
+                            <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-encuestadores">0</h2>
+                        </div>
+                        <div class="p-3 rounded-xl bg-amber-100 text-amber-600"><i class="fa-solid fa-users-gear text-xl"></i></div>
+                    </div>
+                </div>
+                <div class="glass-panel p-5 border-l-4 border-purple-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Viviendas Visitadas</p>
+                            <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-viviendas">0</h2>
+                        </div>
+                        <div class="p-3 rounded-xl bg-purple-100 text-purple-600"><i class="fa-solid fa-door-open text-xl"></i></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="glass-panel p-5 border-l-4 border-red-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Barreras Salud</p>
-                        <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-salud">0</h2>
+            <!-- Mapa y Grafico General -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="glass-panel p-5 lg:col-span-2 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-gray-700"><i class="fa-solid fa-map-location-dot mr-2 text-green-600"></i>Georreferenciación de Visitas</h3>
                     </div>
-                    <div class="p-3 rounded-xl bg-red-100 text-red-600"><i class="fa-solid fa-house-medical-circle-xmark text-xl"></i></div>
-                </div>
-            </div>
-
-            <div class="glass-panel p-5 border-l-4 border-amber-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Riesgo Ambiental</p>
-                        <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-riesgo">0</h2>
-                    </div>
-                    <div class="p-3 rounded-xl bg-amber-100 text-amber-600"><i class="fa-solid fa-volcano text-xl"></i></div>
-                </div>
-            </div>
-
-            <div class="glass-panel p-5 border-l-4 border-blue-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Déficit Servicios</p>
-                        <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-servicios">0</h2>
-                    </div>
-                    <div class="p-3 rounded-xl bg-blue-100 text-blue-600"><i class="fa-solid fa-faucet-drip text-xl"></i></div>
-                </div>
-            </div>
-
-            <div class="glass-panel p-5 border-l-4 border-purple-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider">Desempleo/Informal</p>
-                        <h2 class="text-3xl font-bold text-gray-800 mt-1" id="kpi-empleo">0</h2>
-                    </div>
-                    <div class="p-3 rounded-xl bg-purple-100 text-purple-600"><i class="fa-solid fa-person-digging text-xl"></i></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Módulo: Mapa y Resumen de Redes -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Mapa Interactivo -->
-            <div class="glass-panel p-5 lg:col-span-2 flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-bold text-gray-700"><i class="fa-solid fa-map-location-dot mr-2 text-green-600"></i>Georreferenciación de Vulnerabilidades</h3>
-                    <div class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-200">
-                        <span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-1"></span> Alerta
-                        <span class="inline-block w-2 h-2 bg-blue-500 rounded-full ml-2 mr-1"></span> Normal
+                    <div id="map" class="rounded-xl border border-gray-200 bg-gray-50 flex-grow shadow-inner">
+                        <span class="text-gray-500 m-4 flex items-center justify-center h-full" id="map-placeholder">
+                            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Cargando mapa...
+                        </span>
                     </div>
                 </div>
-                <div id="map" class="rounded-xl border border-gray-200 bg-gray-50 flex-grow shadow-inner">
-                    <span class="text-gray-500 m-4 flex items-center justify-center h-full" id="map-placeholder">
-                        <i class="fa-solid fa-spinner fa-spin mr-2"></i> Cargando mapa...
-                    </span>
-                </div>
-            </div>
-
-            <!-- Gráfico Red de Salud & Educación -->
-            <div class="flex flex-col gap-6">
-                <div class="glass-panel p-5 flex-1" id="panel-grafico-red">
-                    <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-network-wired mr-2 text-blue-500"></i>Visitas por Red de Salud</h3>
-                    <div class="w-full h-48 relative">
+                <div class="glass-panel p-5 flex flex-col justify-center">
+                    <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-network-wired mr-2 text-blue-500"></i>Distribución por ESE (Red)</h3>
+                    <div class="w-full h-64 relative mt-4">
                         <canvas id="chartRedSalud"></canvas>
                     </div>
                 </div>
-                <div class="glass-panel p-5 flex-1">
-                    <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-user-graduate mr-2 text-indigo-500"></i>Nivel Educativo</h3>
-                    <div class="w-full h-48 relative">
-                        <canvas id="chartEducacion"></canvas>
-                    </div>
-                </div>
             </div>
         </div>
 
-        <!-- Módulo: Condiciones de Vida y Riesgos -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Gráfico: Laboral y Económico -->
-            <div class="glass-panel p-5">
-                <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-coins mr-2 text-amber-500"></i>Situación Socioeconómica</h3>
-                <div class="w-full h-64">
-                    <canvas id="chartEconomia"></canvas>
-                </div>
-            </div>
-
-            <!-- Gráfico: Condiciones de Vivienda -->
-            <div class="glass-panel p-5">
-                <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-house-crack mr-2 text-orange-500"></i>Déficit en Vivienda y Servicios</h3>
-                <div class="w-full h-64">
-                    <canvas id="chartVivienda"></canvas>
-                </div>
-            </div>
-
-            <!-- Gráfico: Riesgos Ambientales -->
-            <div class="glass-panel p-5">
-                <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-smog mr-2 text-stone-500"></i>Ambiental y Entorno</h3>
-                <div class="w-full h-64">
-                    <canvas id="chartAmbiental"></canvas>
-                </div>
+        <!-- ========================================== -->
+        <!-- PESTAÑA 2: EDUCACIÓN                       -->
+        <!-- ========================================== -->
+        <div id="tab-educacion" class="tab-content mb-10">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-indigo-500 pl-3">Módulo: Educación</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2">¿Población Desescolarizada?</h3><div class="h-56 relative"><canvas id="c_edu_desescolarizada"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2">¿Hay Bachilleres?</h3><div class="h-56 relative"><canvas id="c_edu_bachilleres"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2">¿Vinculados al SENA/Superior?</h3><div class="h-56 relative"><canvas id="c_edu_sena"></canvas></div></div>
             </div>
         </div>
 
-        <!-- Módulo: Seguridad y Salud Mental -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-             <div class="glass-panel p-5">
-                <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-shield-halved mr-2 text-red-500"></i>Seguridad y Convivencia</h3>
-                <div class="w-full h-64">
-                    <canvas id="chartSeguridad"></canvas>
-                </div>
+        <!-- ========================================== -->
+        <!-- PESTAÑA 3: LABORAL Y ECONÓMICO             -->
+        <!-- ========================================== -->
+        <div id="tab-laboral" class="tab-content mb-10">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-amber-500 pl-3">Módulo: Trabajo e Ingresos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2">¿Trabajo Informal?</h3><div class="h-56 relative"><canvas id="c_lab_informal"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2">¿Situación de Desempleo?</h3><div class="h-56 relative"><canvas id="c_lab_desempleo"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2">¿Ingresos Bajos (Menos de 1 SMLV)?</h3><div class="h-56 relative"><canvas id="c_lab_ingresos_bajos"></canvas></div></div>
             </div>
-            
-             <div class="glass-panel p-5">
-                <h3 class="text-base font-bold mb-3 text-gray-700 border-b pb-2"><i class="fa-solid fa-brain mr-2 text-pink-500"></i>Salud Mental y Social</h3>
-                <div class="w-full h-64">
-                    <canvas id="chartSaludMental"></canvas>
-                </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PESTAÑA 4: VIVIENDA Y SERVICIOS            -->
+        <!-- ========================================== -->
+        <div id="tab-vivienda" class="tab-content mb-10">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-blue-500 pl-3">Módulo: Vivienda y Servicios Públicos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass-panel p-5 text-center border-t-4 border-blue-500"><h3 class="font-bold text-gray-700 mb-2">¿Saneamiento Cocina Inadecuado?</h3><div class="h-56 relative"><canvas id="c_viv_saneamiento_cocina"></canvas></div></div>
+                <div class="glass-panel p-5 text-center border-t-4 border-blue-500"><h3 class="font-bold text-gray-700 mb-2">¿Cocinan con Leña/Carbón?</h3><div class="h-56 relative"><canvas id="c_viv_lena"></canvas></div></div>
+                <div class="glass-panel p-5 text-center border-t-4 border-blue-500"><h3 class="font-bold text-gray-700 mb-2">¿Uso de Baterías/Plomo?</h3><div class="h-56 relative"><canvas id="c_viv_baterias"></canvas></div></div>
+                
+                <div class="glass-panel p-5 text-center border-t-4 border-cyan-500"><h3 class="font-bold text-gray-700 mb-2">¿Cuenta con Servicio de Agua?</h3><div class="h-56 relative"><canvas id="c_serv_agua"></canvas></div></div>
+                <div class="glass-panel p-5 text-center border-t-4 border-cyan-500"><h3 class="font-bold text-gray-700 mb-2">¿Cuenta con Energía Eléctrica?</h3><div class="h-56 relative"><canvas id="c_serv_energia"></canvas></div></div>
+                <div class="glass-panel p-5 text-center border-t-4 border-cyan-500"><h3 class="font-bold text-gray-700 mb-2">¿Cuenta con Alcantarillado?</h3><div class="h-56 relative"><canvas id="c_serv_alcantarillado"></canvas></div></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PESTAÑA 5: SALUD Y ACCESO                  -->
+        <!-- ========================================== -->
+        <div id="tab-salud" class="tab-content mb-10">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-red-500 pl-3">Módulo: Salud y Acceso</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-lg">¿Asignados a una IPS?</h3><div class="h-64 relative"><canvas id="c_salud_ips"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-lg">¿Barreras Acceso a Salud?</h3><div class="h-64 relative"><canvas id="c_salud_barreras"></canvas></div></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PESTAÑA 6: AMBIENTAL Y RIESGOS             -->
+        <!-- ========================================== -->
+        <div id="tab-ambiental" class="tab-content mb-10">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-green-600 pl-3">Módulo: Ambiental y Riesgos Geográficos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Basuras/Escombros Vía?</h3><div class="h-48 relative"><canvas id="c_amb_basura"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Animales Callejeros?</h3><div class="h-48 relative"><canvas id="c_amb_animales_calle"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Vectores/Plagas/Roedores?</h3><div class="h-48 relative"><canvas id="c_amb_vectores"></canvas></div></div>
+                
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Riesgo Deslizamiento?</h3><div class="h-48 relative"><canvas id="c_riesgo_deslizamiento"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Riesgo Inundación?</h3><div class="h-48 relative"><canvas id="c_riesgo_inundacion"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Riesgo Incendio?</h3><div class="h-48 relative"><canvas id="c_riesgo_incendio"></canvas></div></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PESTAÑA 7: SEGURIDAD Y CONVIVENCIA         -->
+        <!-- ========================================== -->
+        <div id="tab-seguridad" class="tab-content mb-10">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-purple-500 pl-3">Módulo: Seguridad Comunitaria</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Seguridad Comunitaria Afectada?</h3><div class="h-56 relative"><canvas id="c_seg_seguridad_comunitaria"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Riñas/Violencia Frecuente?</h3><div class="h-56 relative"><canvas id="c_seg_riñas"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Presencia Pandillas/Grupos?</h3><div class="h-56 relative"><canvas id="c_seg_pandillas"></canvas></div></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PESTAÑA 8: SALUD MENTAL Y SOCIAL           -->
+        <!-- ========================================== -->
+        <div id="tab-mental" class="tab-content mb-10">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-pink-500 pl-3">Módulo: Salud Mental y Participación</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Consumo SPA Vía Pública?</h3><div class="h-48 relative"><canvas id="c_sm_consumo_calle"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Consumo Licor Vía Pública?</h3><div class="h-48 relative"><canvas id="c_sm_licor_calle"></canvas></div></div>
+                <div class="glass-panel p-5 text-center"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Casos/Riesgo de Suicidio?</h3><div class="h-48 relative"><canvas id="c_sm_suicidios"></canvas></div></div>
+                <div class="glass-panel p-5 text-center border-t-4 border-green-500"><h3 class="font-bold text-gray-700 mb-2 text-sm">¿Participan en Orgs. Locales?</h3><div class="h-48 relative"><canvas id="c_part_organizaciones"></canvas></div></div>
             </div>
         </div>
 
     </div>
 
-    <!-- Script de Lógica Principal -->
+    <!-- Script Principal -->
     <script>
-        // Variables globales y de estado
+        // --- GESTIÓN DE PESTAÑAS ---
+        function cambiarPestaña(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+
+            if(tabId === 'tab-identificacion' && map) {
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+        }
+
+        // --- VARIABLES GLOBALES ---
         let map;
         let markersGroup;
-        
-        let todosLosDatos = []; // Almacenará TODOS los datos que vienen del Sheets
-        let datosFiltrados = []; // Almacenará los datos tras aplicar el Filtro ESE
-        let filtroActual = 'Todas'; // Estado actual del filtro
+        let todosLosDatos = []; 
+        let datosFiltrados = []; 
+        let filtroActual = 'Todas'; 
         let ultimaActualizacionStr = '';
+        
+        let chartInstances = {}; 
 
-        // Instancias de Chart.js
-        let charts = {
-            redSalud: null,
-            educacion: null,
-            economia: null,
-            vivienda: null,
-            ambiental: null,
-            seguridad: null,
-            saludMental: null
-        };
-
-        // ESTA ES TU BASE DE DATOS EN VIVO
         const sheetId = '1fWf3Ktd3jxeRWFHCQaGyDrKqRzGi2y_4gkfFsVl9yUs';
 
-        // Funciones de ayuda
-        const isYes = (val) => val && val.trim().toLowerCase() === 'sí';
-        const isNo = (val) => val && val.trim().toLowerCase() === 'no';
-        
+        // Lógica de validación
+        const getRawYesNo = (val) => {
+            if (!val) return 'N/A';
+            const v = val.trim().toLowerCase();
+            if (v.includes('sí') || v === 'si') return 'Sí';
+            if (v === 'no') return 'No';
+            return 'N/A';
+        };
+
         const formatTime = (date) => {
             return date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         };
@@ -274,9 +357,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             inicializarMapaVacio();
             cargarDatos();
-            
-            // Auto-refresh cada 15 segundos consultando a Google Sheets
-            setInterval(cargarDatos, 15000);
+            setInterval(cargarDatos, 15000); // Auto update
         });
 
         function inicializarMapaVacio() {
@@ -290,7 +371,6 @@
             markersGroup = L.featureGroup().addTo(map);
         }
 
-        // --- CONEXIÓN A GOOGLE SHEETS EN VIVO ---
         function cargarDatos() {
             const syncIcon = document.getElementById('sync-icon');
             syncIcon.classList.add('fa-spin');
@@ -317,7 +397,6 @@
                 },
                 error: function (err) {
                     syncIcon.classList.remove('fa-spin');
-                    console.error("Error CSV:", err);
                     mostrarError("Error al conectar con Google Sheets. Verificando red...");
                 }
             });
@@ -333,317 +412,213 @@
 
             const extraerNumero = (val) => {
                 if (!val) return 0;
-                const strVal = String(val).trim();
-                const numRegex = /-?\d+[\.,]?\d*/g;
-                const matches = strVal.match(numRegex);
+                const matches = String(val).trim().match(/-?\d+[\.,]?\d*/g);
                 if (matches && matches.length > 0) return parseFloat(matches[0].replace(',', '.'));
                 return 0;
             };
 
-            // Mapeo estructurado de cada registro
+            // Lectura de cada variable exactamente como está en el CSV original
             todosLosDatos = rawData.map(row => {
                 let lat = extraerNumero(row['GPS_Latitud']);
                 let lng = extraerNumero(row['GPS_Longitud']);
-
-                // Si viene vacío el ESE, le ponemos "No especificada"
-                let redSaludValue = (row['red_salud'] || 'No especificada').trim();
-
+                
                 return {
-                    // Generales
+                    // INFO GENERAL
                     fecha: row['fecha_visita'] || 'Sin dato',
-                    red_salud: redSaludValue,
+                    red_salud: (row['red_salud'] || 'No especificada').trim(),
                     encuestador: row['encuestador'] || 'Anónimo',
                     comuna: row['comuna'] || 'N/A',
                     barrio: row['barrio'] || 'N/A',
+                    viviendas: parseFloat(row['viviendas']) || 1,
                     lat: isNaN(lat) ? 0 : lat,
                     lng: isNaN(lng) ? 0 : lng,
                     
-                    // Educación
-                    edu_desescolarizada: isYes(row['edu_desescolarizada']),
-                    edu_bachilleres: isYes(row['edu_bachilleres']),
-                    edu_sena: isYes(row['edu_sena']),
+                    // SECCIÓN 2: EDUCACIÓN
+                    edu_desescolarizada: getRawYesNo(row['edu_desescolarizada']),
+                    edu_bachilleres: getRawYesNo(row['edu_bachilleres']),
+                    edu_sena: getRawYesNo(row['edu_sena']),
                     
-                    // Laboral y Económico
-                    lab_informal: isYes(row['lab_informal']),
-                    lab_desempleo: isYes(row['lab_desempleo']),
-                    lab_ingresos_bajos: isYes(row['lab_ingresos_bajos']),
+                    // SECCIÓN 3: LABORAL
+                    lab_informal: getRawYesNo(row['lab_informal']),
+                    lab_desempleo: getRawYesNo(row['lab_desempleo']),
+                    lab_ingresos_bajos: getRawYesNo(row['lab_ingresos_bajos']),
                     
-                    // Vivienda y Servicios
-                    viv_cocina_inadecuada: isYes(row['viv_saneamiento_cocina']) || isYes(row['viv_lena']),
-                    deficit_agua: isNo(row['serv_agua']),
-                    deficit_energia: isNo(row['serv_energia']),
-                    deficit_alcantarillado: isNo(row['serv_alcantarillado']),
+                    // SECCIÓN 4: VIVIENDA / SERVICIOS (viv_ y serv_)
+                    viv_saneamiento_cocina: getRawYesNo(row['viv_saneamiento_cocina']),
+                    viv_lena: getRawYesNo(row['viv_lena']),
+                    viv_baterias: getRawYesNo(row['viv_baterias']),
+                    serv_agua: getRawYesNo(row['serv_agua']),
+                    serv_energia: getRawYesNo(row['serv_energia']),
+                    serv_alcantarillado: getRawYesNo(row['serv_alcantarillado']),
                     
-                    // Ambiental y Riesgos
-                    amb_basura: isYes(row['amb_basura']),
-                    amb_vectores: isYes(row['amb_vectores']),
-                    riesgo_deslizamiento: isYes(row['riesgo_deslizamiento']),
-                    riesgo_inundacion: isYes(row['riesgo_inundacion']),
-                    riesgo_incendio: isYes(row['riesgo_incendio']),
+                    // SECCIÓN 5: SALUD (salud_)
+                    salud_ips: getRawYesNo(row['salud_ips']),
+                    salud_barreras: getRawYesNo(row['salud_barreras']),
+
+                    // SECCIÓN 6: AMBIENTAL Y RIESGOS (amb_ y riesgo_)
+                    amb_basura: getRawYesNo(row['amb_basura']),
+                    amb_animales_calle: getRawYesNo(row['amb_animales_calle']),
+                    amb_vectores: getRawYesNo(row['amb_vectores']),
+                    riesgo_deslizamiento: getRawYesNo(row['riesgo_deslizamiento']),
+                    riesgo_inundacion: getRawYesNo(row['riesgo_inundacion']),
+                    riesgo_incendio: getRawYesNo(row['riesgo_incendio']),
                     
-                    // Salud y Seguridad
-                    salud_barreras: isYes(row['salud_barreras']),
-                    seg_riñas: isYes(row['seg_riñas']),
-                    seg_pandillas: isYes(row['seg_pandillas']),
-                    
-                    // Salud Mental / Social
-                    sm_consumo_calle: isYes(row['sm_consumo_calle']),
-                    sm_licor_calle: isYes(row['sm_licor_calle']),
-                    sm_suicidios: isYes(row['sm_suicidios']),
-                    part_organizaciones: isYes(row['part_organizaciones'])
+                    // SECCIÓN 7: SEGURIDAD (seg_)
+                    seg_seguridad_comunitaria: getRawYesNo(row['seg_seguridad_comunitaria']),
+                    seg_riñas: getRawYesNo(row['seg_riñas']),
+                    seg_pandillas: getRawYesNo(row['seg_pandillas']),
+
+                    // SECCIÓN 8: SALUD MENTAL (sm_ y part_)
+                    sm_consumo_calle: getRawYesNo(row['sm_consumo_calle']),
+                    sm_licor_calle: getRawYesNo(row['sm_licor_calle']),
+                    sm_suicidios: getRawYesNo(row['sm_suicidios']),
+                    part_organizaciones: getRawYesNo(row['part_organizaciones'])
                 };
             });
 
-            // Actualizar las opciones del filtro ESE
             actualizarSelectFiltro();
-
-            // Aplicar el filtro a la data (esto llama al renderizado completo)
             aplicarFiltro(true);
         }
 
-        // --- SISTEMA DE FILTRADO POR RED DE SALUD (ESE) --- //
         function actualizarSelectFiltro() {
             const selectElement = document.getElementById('filtro-red');
-            
-            // Extraer todas las redes de salud únicas de la base de datos
             const redesUnicas = [...new Set(todosLosDatos.map(d => d.red_salud))].filter(Boolean).sort();
             
-            // Reconstruir opciones
             selectElement.innerHTML = '<option value="Todas">Todas las ESE</option>';
             redesUnicas.forEach(red => {
-                if(red !== 'No especificada') {
-                    selectElement.innerHTML += `<option value="${red}">${red}</option>`;
-                }
+                if(red !== 'No especificada') selectElement.innerHTML += `<option value="${red}">${red}</option>`;
             });
 
-            // Restaurar selección si el usuario tenía algo seleccionado y ocurrió el auto-refresh
-            if (redesUnicas.includes(filtroActual)) {
-                selectElement.value = filtroActual;
-            } else {
-                filtroActual = 'Todas';
-                selectElement.value = 'Todas';
-            }
+            if (redesUnicas.includes(filtroActual)) selectElement.value = filtroActual;
+            else { filtroActual = 'Todas'; selectElement.value = 'Todas'; }
         }
 
         function aplicarFiltro(esRefrescoAutomatico = false) {
-            // Obtener el valor actual del `<select>`
             filtroActual = document.getElementById('filtro-red').value;
-            
-            // Filtrar los datos maestos
-            if (filtroActual === 'Todas') {
-                datosFiltrados = [...todosLosDatos];
-            } else {
-                datosFiltrados = todosLosDatos.filter(d => d.red_salud === filtroActual);
-            }
+            datosFiltrados = filtroActual === 'Todas' ? [...todosLosDatos] : todosLosDatos.filter(d => d.red_salud === filtroActual);
 
-            // Ocultar/Mostrar el gráfico de pastel de "Redes de Salud" dependiendo si hay un filtro aplicado
-            const panelGraficoRed = document.getElementById('panel-grafico-red');
-            if (filtroActual === 'Todas') {
-                panelGraficoRed.style.display = 'block'; // Mostrar si son todas
-            } else {
-                panelGraficoRed.style.display = 'none';  // Ocultar si ya filtramos por una sola
-            }
-
-            // Repintar UI con la info filtrada
-            actualizarKPIs(datosFiltrados);
-            actualizarMapa(datosFiltrados, esRefrescoAutomatico);
-            actualizarGraficos(datosFiltrados);
+            actualizarResumenGlobal(datosFiltrados, esRefrescoAutomatico);
+            renderizarTodasLasGraficasIndividuales(datosFiltrados);
         }
 
-        function actualizarKPIs(data) {
+        function actualizarResumenGlobal(data, esRefrescoAutomatico) {
+            // KPIs
             document.getElementById('kpi-total').innerText = data.length;
+            document.getElementById('kpi-comunas').innerText = [...new Set(data.map(d => d.comuna))].filter(c => c !== 'N/A').length;
+            document.getElementById('kpi-encuestadores').innerText = [...new Set(data.map(d => d.encuestador))].length;
+            document.getElementById('kpi-viviendas').innerText = data.reduce((acc, curr) => acc + curr.viviendas, 0);
 
-            // Barreras de Salud
-            const barreras = data.filter(d => d.salud_barreras).length;
-            document.getElementById('kpi-salud').innerText = barreras;
-
-            // Riesgo Ambiental
-            const riesgoAmb = data.filter(d => d.riesgo_deslizamiento || d.riesgo_inundacion || d.riesgo_incendio).length;
-            document.getElementById('kpi-riesgo').innerText = riesgoAmb;
-
-            // Déficit Servicios
-            const servicios = data.filter(d => d.deficit_agua || d.deficit_energia || d.deficit_alcantarillado).length;
-            document.getElementById('kpi-servicios').innerText = servicios;
-
-            // Vulnerabilidad Laboral
-            const empleo = data.filter(d => d.lab_desempleo || d.lab_informal).length;
-            document.getElementById('kpi-empleo').innerText = empleo;
-        }
-
-        function actualizarMapa(data, esRefrescoAutomatico) {
+            // Mapa
             markersGroup.clearLayers();
-
-            const redIcon = new L.Icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-            });
-            const blueIcon = new L.Icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-            });
+            const blueIcon = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34] });
 
             data.forEach(d => {
-                // Lógica de alerta en mapa: Alta vulnerabilidad
-                const isVulnerable = d.salud_barreras || d.deficit_agua || d.riesgo_deslizamiento || d.riesgo_inundacion || d.seg_pandillas;
-
                 if (!isNaN(d.lat) && !isNaN(d.lng) && d.lat !== 0 && d.lng !== 0) {
-                    const marker = L.marker([d.lat, d.lng], { icon: isVulnerable ? redIcon : blueIcon });
-                    
-                    // Alertas compiladas para el popup
-                    let alertas = [];
-                    if(d.salud_barreras) alertas.push('<span class="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded">Barrera Salud</span>');
-                    if(d.deficit_agua) alertas.push('<span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">Sin Agua</span>');
-                    if(d.riesgo_deslizamiento) alertas.push('<span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded">Deslizamiento</span>');
-
-                    marker.bindPopup(`
-                        <div class="text-sm w-48">
-                            <strong class="text-base text-green-800 border-b block pb-1 mb-1">${d.barrio}</strong>
-                            <p class="mb-1 text-gray-600"><i class="fa-solid fa-calendar-day w-4 text-center"></i> ${d.fecha}</p>
-                            <p class="mb-1 text-gray-600"><i class="fa-solid fa-hospital w-4 text-center"></i> Red ${d.red_salud}</p>
-                            <p class="mb-2 text-gray-600"><i class="fa-solid fa-clipboard-user w-4 text-center"></i> ${d.encuestador}</p>
-                            <div class="flex flex-wrap gap-1 mt-2">
-                                ${alertas.length > 0 ? alertas.join('') : '<span class="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded">Sin alertas graves</span>'}
-                            </div>
-                        </div>
-                    `);
+                    const marker = L.marker([d.lat, d.lng], { icon: blueIcon });
+                    marker.bindPopup(`<div class="text-sm"><strong>${d.barrio}</strong><br/>${d.fecha}<br/>Red: ${d.red_salud}</div>`);
                     markersGroup.addLayer(marker);
                 }
             });
 
-            // Ajustar el zoom del mapa de manera inteligente
-            if (markersGroup.getLayers().length > 0) {
-                // Si el usuario cambia el filtro manualmente, el mapa se acerca automáticamente a los pines de esa ESE
-                if (!esRefrescoAutomatico) {
-                    map.fitBounds(markersGroup.getBounds(), { padding: [40, 40], maxZoom: 15 });
-                }
-            } else {
-                // Vista predeterminada sobre Cali si no hay datos al filtrar
-                map.setView([3.422, -76.548], 12);
+            if (markersGroup.getLayers().length > 0 && !esRefrescoAutomatico) {
+                map.fitBounds(markersGroup.getBounds(), { padding: [40, 40], maxZoom: 15 });
             }
-        }
 
-        // --- FUNCIONES GENERADORAS DE GRÁFICOS --- //
-        function crearGrafico(ctxId, type, instanceName, chartData, options = {}) {
-            const ctx = document.getElementById(ctxId);
-            if (charts[instanceName]) charts[instanceName].destroy();
-            
-            const defaultOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: { duration: 500 }
-            };
-
-            charts[instanceName] = new Chart(ctx, {
-                type: type,
-                data: chartData,
-                options: { ...defaultOptions, ...options }
+            // Gráfico General
+            const redesCounts = data.reduce((acc, curr) => { acc[curr.red_salud] = (acc[curr.red_salud] || 0) + 1; return acc; }, {});
+            if (chartInstances['chartRedSalud']) chartInstances['chartRedSalud'].destroy();
+            chartInstances['chartRedSalud'] = new Chart(document.getElementById('chartRedSalud'), {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(redesCounts),
+                    datasets: [{ data: Object.values(redesCounts), backgroundColor: ['#059669', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
             });
         }
 
-        function actualizarGraficos(data) {
-            // Manejamos caso de array vacío para no quebrar las gráficas
-            const safeData = data.length > 0 ? data : [{}];
+        // --- CREADOR DE GRÁFICAS (SÍ vs NO) ---
+        function renderizarGraficaPregunta(containerId, data, dataField, isPositiveYes = false) {
+            const counts = { 'Sí': 0, 'No': 0, 'N/A': 0 };
+            data.forEach(d => {
+                const answer = d[dataField];
+                if (counts[answer] !== undefined) counts[answer]++;
+            });
 
-            // 1. Red de Salud (Doughnut) - Solo se dibuja si estamos en "Todas"
-            if (filtroActual === 'Todas') {
-                const redes = safeData.reduce((acc, curr) => { 
-                    if(curr.red_salud) acc[curr.red_salud] = (acc[curr.red_salud] || 0) + 1; 
-                    return acc; 
-                }, {});
-                crearGrafico('chartRedSalud', 'doughnut', 'redSalud', {
-                    labels: Object.keys(redes).length > 0 ? Object.keys(redes) : ['Sin Datos'],
-                    datasets: [{ data: Object.values(redes).length > 0 ? Object.values(redes) : [1], backgroundColor: ['#059669', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899'] }]
-                }, { plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } }, cutout: '65%' });
+            // Lógica semántica: Si responder "Sí" es algo positivo (ej: Tiene Agua), se pinta Verde. Si es negativo (ej: Desempleo), Rojo.
+            const colorSi = isPositiveYes ? '#10b981' : '#ef4444'; 
+            const colorNo = isPositiveYes ? '#ef4444' : '#10b981';
+            const bgColors = { 'Sí': colorSi, 'No': colorNo, 'N/A': '#cbd5e1' };
+
+            const labels = Object.keys(counts).filter(k => counts[k] > 0);
+            const datasetData = labels.map(k => counts[k]);
+            const datasetColors = labels.map(k => bgColors[k]);
+
+            const ctx = document.getElementById(containerId);
+            if (chartInstances[containerId]) chartInstances[containerId].destroy();
+
+            if (datasetData.length === 0) {
+                labels.push('Sin Datos'); datasetData.push(1); datasetColors.push('#f1f5f9');
             }
 
-            // 2. Educación (Pie)
-            const eduData = [
-                data.filter(d => d.edu_desescolarizada).length,
-                data.filter(d => d.edu_bachilleres).length,
-                data.filter(d => d.edu_sena).length
-            ];
-            crearGrafico('chartEducacion', 'pie', 'educacion', {
-                labels: ['Desescolarizada', 'Bachiller', 'SENA/Técnico'],
-                datasets: [{ data: data.length > 0 ? eduData : [0,0,0], backgroundColor: ['#ef4444', '#f59e0b', '#10b981'] }]
-            }, { plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } } });
+            chartInstances[containerId] = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: datasetData, backgroundColor: datasetColors, borderWidth: 1, borderColor: '#ffffff' }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10 } },
+                        tooltip: { callbacks: { label: function(context) {
+                            let val = context.raw;
+                            let total = context.chart._metasets[context.datasetIndex].total;
+                            let percentage = Math.round((val / total) * 100) + "%";
+                            return ` ${val} encuestas (${percentage})`;
+                        }}}
+                    }
+                }
+            });
+        }
 
-            // 3. Situación Económica (Bar)
-            crearGrafico('chartEconomia', 'bar', 'economia', {
-                labels: ['Desempleo', 'Trabajo Informal', 'Ingresos Bajos'],
-                datasets: [{
-                    label: 'Cantidad de Reportes',
-                    data: [
-                        data.filter(d => d.lab_desempleo).length,
-                        data.filter(d => d.lab_informal).length,
-                        data.filter(d => d.lab_ingresos_bajos).length
-                    ],
-                    backgroundColor: '#f59e0b', borderRadius: 6
-                }]
-            }, { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } });
+        function renderizarTodasLasGraficasIndividuales(data) {
+            // SECCIÓN 2: Demografía y Empleo
+            renderizarGraficaPregunta('c_edu_desescolarizada', data, 'edu_desescolarizada', false);
+            renderizarGraficaPregunta('c_edu_bachilleres', data, 'edu_bachilleres', true); 
+            renderizarGraficaPregunta('c_edu_sena', data, 'edu_sena', true);
+            renderizarGraficaPregunta('c_lab_informal', data, 'lab_informal', false); 
+            renderizarGraficaPregunta('c_lab_desempleo', data, 'lab_desempleo', false);
+            renderizarGraficaPregunta('c_lab_ingresos_bajos', data, 'lab_ingresos_bajos', false);
 
-            // 4. Vivienda y Servicios (Bar Horizontal)
-            crearGrafico('chartVivienda', 'bar', 'vivienda', {
-                labels: ['Sin Agua', 'Sin Energía', 'Sin Alcantarillado', 'Cocina Leña/Inadec.'],
-                datasets: [{
-                    label: 'Viviendas Afectadas',
-                    data: [
-                        data.filter(d => d.deficit_agua).length,
-                        data.filter(d => d.deficit_energia).length,
-                        data.filter(d => d.deficit_alcantarillado).length,
-                        data.filter(d => d.viv_cocina_inadecuada).length
-                    ],
-                    backgroundColor: '#3b82f6', borderRadius: 6
-                }]
-            }, { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } });
+            // SECCIÓN 3: Vivienda y Servicios
+            renderizarGraficaPregunta('c_viv_saneamiento_cocina', data, 'viv_saneamiento_cocina', false);
+            renderizarGraficaPregunta('c_viv_lena', data, 'viv_lena', false);
+            renderizarGraficaPregunta('c_viv_baterias', data, 'viv_baterias', false);
+            renderizarGraficaPregunta('c_serv_agua', data, 'serv_agua', true); 
+            renderizarGraficaPregunta('c_serv_energia', data, 'serv_energia', true);
+            renderizarGraficaPregunta('c_serv_alcantarillado', data, 'serv_alcantarillado', true);
+            renderizarGraficaPregunta('c_amb_basura', data, 'amb_basura', true); // "Cuenta con recolección" -> true=Good
 
-            // 5. Ambiental (Bar Horizontal)
-            crearGrafico('chartAmbiental', 'bar', 'ambiental', {
-                labels: ['Basuras en vía', 'Vectores/Plagas', 'R. Deslizamiento', 'R. Inundación', 'R. Incendio'],
-                datasets: [{
-                    label: 'Reportes',
-                    data: [
-                        data.filter(d => d.amb_basura).length,
-                        data.filter(d => d.amb_vectores).length,
-                        data.filter(d => d.riesgo_deslizamiento).length,
-                        data.filter(d => d.riesgo_inundacion).length,
-                        data.filter(d => d.riesgo_incendio).length
-                    ],
-                    backgroundColor: '#84cc16', borderRadius: 6
-                }]
-            }, { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } });
+            // SECCIÓN 4: Salud, Riesgos y Zoonosis
+            renderizarGraficaPregunta('c_salud_ips', data, 'salud_ips', true); 
+            renderizarGraficaPregunta('c_salud_barreras', data, 'salud_barreras', false);
+            renderizarGraficaPregunta('c_amb_animales_calle', data, 'amb_animales_calle', false);
+            renderizarGraficaPregunta('c_amb_vectores', data, 'amb_vectores', false);
+            renderizarGraficaPregunta('c_riesgo_deslizamiento', data, 'riesgo_deslizamiento', false);
+            renderizarGraficaPregunta('c_riesgo_inundacion', data, 'riesgo_inundacion', false);
+            renderizarGraficaPregunta('c_riesgo_incendio', data, 'riesgo_incendio', false);
 
-            // 6. Seguridad (Polar o Bar)
-            crearGrafico('chartSeguridad', 'bar', 'seguridad', {
-                labels: ['Riñas Constantes', 'Pandillas/Combos'],
-                datasets: [{
-                    label: 'Zonas Afectadas',
-                    data: [
-                        data.filter(d => d.seg_riñas).length,
-                        data.filter(d => d.seg_pandillas).length
-                    ],
-                    backgroundColor: '#ef4444', borderRadius: 6, maxBarThickness: 50
-                }]
-            }, { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } });
-
-            // 7. Salud Mental / Social (Bar Horizontal)
-            crearGrafico('chartSaludMental', 'bar', 'saludMental', {
-                labels: ['Consumo Drogas (Vía)', 'Consumo Licor (Vía)', 'Riesgo Suicidio', 'Part. Organizaciones'],
-                datasets: [{
-                    label: 'Incidencias',
-                    data: [
-                        data.filter(d => d.sm_consumo_calle).length,
-                        data.filter(d => d.sm_licor_calle).length,
-                        data.filter(d => d.sm_suicidios).length,
-                        data.filter(d => d.part_organizaciones).length // Este es positivo
-                    ],
-                    backgroundColor: (ctx) => {
-                        return ctx.dataIndex === 3 ? '#10b981' : '#ec4899'; // Verde para el positivo
-                    },
-                    borderRadius: 6
-                }]
-            }, { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } });
+            // SECCIÓN 5: Seguridad y Salud Mental
+            renderizarGraficaPregunta('c_seg_seguridad_comunitaria', data, 'seg_seguridad_comunitaria', true); // "Existen mecanismos" -> true=Good
+            renderizarGraficaPregunta('c_seg_riñas', data, 'seg_riñas', false);
+            renderizarGraficaPregunta('c_seg_pandillas', data, 'seg_pandillas', false);
+            renderizarGraficaPregunta('c_sm_consumo_calle', data, 'sm_consumo_calle', false);
+            renderizarGraficaPregunta('c_sm_licor_calle', data, 'sm_licor_calle', false);
+            renderizarGraficaPregunta('c_sm_suicidios', data, 'sm_suicidios', false);
+            renderizarGraficaPregunta('c_part_organizaciones', data, 'part_organizaciones', true);
         }
     </script>
 </body>
